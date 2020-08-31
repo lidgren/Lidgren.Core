@@ -1,0 +1,159 @@
+#
+# Optimal managed code editor config
+#
+
+root = true
+
+#
+# All files
+#
+[*]
+indent_style = tab
+
+#
+# Code files
+#
+[*.{cs,csx,vb,vbx,tt}]
+end_of_line = crlf
+insert_final_newline = true
+charset = utf-8-bom
+trim_trailing_whitespace = true
+
+#
+# CSharp settings
+#
+
+[*.{cs,vb,tt}]
+csharp_indent_block_contents = true
+csharp_indent_braces = false
+csharp_indent_case_contents = true
+csharp_indent_labels = no_change
+csharp_indent_switch_labels = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_else = true
+csharp_new_line_before_finally = true
+csharp_new_line_before_members_in_anonymous_types = false
+csharp_new_line_before_members_in_object_initializers = false
+csharp_new_line_before_open_brace = all
+csharp_new_line_between_query_expression_clauses = false
+csharp_prefer_braces = false:none
+csharp_prefer_simple_default_expression = true
+csharp_preserve_single_line_blocks = true
+csharp_preserve_single_line_statements = false
+csharp_space_after_cast = false
+csharp_space_after_colon_in_inheritance_clause = true
+csharp_space_after_comma = true
+csharp_space_after_dot = false
+csharp_space_after_keywords_in_control_flow_statements = true
+csharp_space_after_semicolon_in_for_statement = true
+csharp_space_around_binary_operators = before_and_after
+csharp_space_around_declaration_statements = do_not_ignore
+csharp_space_before_colon_in_inheritance_clause = true
+csharp_space_before_comma = false
+csharp_space_before_dot = false
+csharp_space_before_open_square_brackets = false
+csharp_space_before_semicolon_in_for_statement = false
+csharp_space_between_empty_square_brackets = false
+csharp_space_between_method_call_empty_parameter_list_parentheses = false
+csharp_space_between_method_call_name_and_opening_parenthesis = false
+csharp_space_between_method_call_parameter_list_parentheses = false
+csharp_space_between_method_declaration_empty_parameter_list_parentheses = false
+csharp_space_between_method_declaration_name_and_open_parenthesis = false
+csharp_space_between_method_declaration_parameter_list_parentheses = false
+csharp_space_between_parentheses = none
+csharp_space_between_square_brackets = false
+csharp_style_conditional_delegate_call = true
+csharp_style_expression_bodied_accessors = when_on_single_line:suggestion
+csharp_style_expression_bodied_constructors = false
+csharp_style_expression_bodied_indexers = when_on_single_line:suggestion
+csharp_style_expression_bodied_methods = when_on_single_line:none
+csharp_style_expression_bodied_operators = when_on_single_line:suggestion
+csharp_style_expression_bodied_properties = when_on_single_line:suggestion
+csharp_style_inlined_variable_declaration = true:suggestion
+csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
+csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
+csharp_style_throw_expression = false
+csharp_style_var_elsewhere = false
+csharp_style_var_for_built_in_types = false
+csharp_style_var_when_type_is_apparent = true:suggestion
+
+#
+# Naming
+#
+
+# public const int Hello = 42;
+dotnet_naming_symbols.public_constants_field_symbol.applicable_kinds = field
+dotnet_naming_symbols.public_constants_field_symbol.required_modifiers = const
+dotnet_naming_symbols.public_constants_field_symbol.applicable_accessibilities = public
+dotnet_naming_style.public_constants_field_style.capitalization = pascal_case
+dotnet_naming_rule.public_constants_fields_rule.severity = warning
+dotnet_naming_rule.public_constants_fields_rule.symbols = public_constants_field_symbol
+dotnet_naming_rule.public_constants_fields_rule.style = public_constants_field_style
+
+# private const int c_hello = 42;
+dotnet_naming_symbols.private_constants_field_symbol.applicable_kinds = field
+dotnet_naming_symbols.private_constants_field_symbol.required_modifiers = const
+dotnet_naming_symbols.private_constants_field_symbol.applicable_accessibilities = private
+dotnet_naming_style.private_constants_field_style.capitalization = camel_case
+dotnet_naming_rule.private_constants_fields_rule.severity = warning
+dotnet_naming_rule.private_constants_fields_rule.symbols = private_constants_field_symbol
+dotnet_naming_rule.private_constants_fields_rule.style = private_constants_field_style
+
+# public static int Hello = 42;
+dotnet_naming_symbols.public_static_field_symbol.applicable_kinds = field
+dotnet_naming_symbols.public_static_field_symbol.required_modifiers = static
+dotnet_naming_symbols.public_static_field_symbol.applicable_accessibilities = public
+dotnet_naming_style.public_static_field_style.capitalization = pascal_case
+dotnet_naming_rule.public_static_fields_rule.severity = warning
+dotnet_naming_rule.public_static_fields_rule.symbols = public_static_field_symbol
+dotnet_naming_rule.public_static_fields_rule.style = public_static_field_style
+
+# private static int s_hello = 42;
+dotnet_naming_symbols.private_static_field_symbol.applicable_kinds = field
+dotnet_naming_symbols.private_static_field_symbol.required_modifiers = static
+dotnet_naming_symbols.private_static_field_symbol.applicable_accessibilities = private
+dotnet_naming_style.private_static_field_style.capitalization = camel_case
+dotnet_naming_style.private_static_field_style.required_prefix = s_
+dotnet_naming_rule.private_static_fields_rule.severity = warning
+dotnet_naming_rule.private_static_fields_rule.symbols = private_static_field_symbol
+dotnet_naming_rule.private_static_fields_rule.style = private_static_field_style
+
+# private int m_hello = 42;
+dotnet_naming_symbols.private_field_symbol.applicable_kinds = field
+dotnet_naming_symbols.private_field_symbol.applicable_accessibilities = private
+dotnet_naming_style.private_field_style.capitalization = camel_case
+dotnet_naming_style.private_field_style.required_prefix = m_
+dotnet_naming_rule.private_fields_rule.severity = warning
+dotnet_naming_rule.private_fields_rule.symbols = private_field_symbol
+dotnet_naming_rule.private_fields_rule.style = private_field_style
+
+# class Hello
+# method Hello()
+dotnet_naming_symbols.class_and_method_symbol.applicable_kinds = class,method
+dotnet_naming_style.class_and_method_style.capitalization = pascal_case
+dotnet_naming_rule.class_and_method_rule.severity = warning
+dotnet_naming_rule.class_and_method_rule.symbols = class_and_method_symbol
+dotnet_naming_rule.class_and_method_rule.style = class_and_method_style
+
+# (int someParameter)
+dotnet_naming_symbols.parameters_symbol.applicable_kinds = parameter
+dotnet_naming_style.parameters_style.capitalization = camel_case
+dotnet_naming_rule.parameters_rule.severity = warning
+dotnet_naming_rule.parameters_rule.symbols = parameters_symbol
+dotnet_naming_rule.parameters_rule.style = parameters_style
+
+#
+# dotnet settings
+#
+dotnet_sort_system_directives_first = true
+dotnet_style_coalesce_expression = false
+dotnet_style_collection_initializer = true:suggestion
+dotnet_style_explicit_tuple_names = true:suggestion
+dotnet_style_null_propagation = true:suggestion
+dotnet_style_object_initializer = true:suggestion
+dotnet_style_predefined_type_for_locals_parameters_members = true
+dotnet_style_predefined_type_for_member_access = false:suggestion
+dotnet_style_qualification_for_event = false:suggestion
+dotnet_style_qualification_for_field = false:suggestion
+dotnet_style_qualification_for_method = false:suggestion
+dotnet_style_qualification_for_property = false:suggestion

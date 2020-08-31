@@ -1,0 +1,296 @@
+﻿using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+namespace Lidgren.Core
+{
+	public static class HashUtil
+	{
+		public static uint Hash32(ReadOnlySpan<byte> bytes)
+		{
+			var hasher = Hasher.Create();
+			hasher.Add(bytes);
+			return hasher.Finalize32();
+		}
+
+		public static ulong Hash64(ReadOnlySpan<byte> bytes)
+		{
+			var hasher = Hasher.Create();
+			hasher.Add(bytes);
+			return hasher.Finalize64();
+		}
+
+		public static uint Hash32(ReadOnlySpan<char> str)
+		{
+			var hasher = Hasher.Create();
+			hasher.Add(str);
+			return hasher.Finalize32();
+		}
+
+		public static ulong Hash64(ReadOnlySpan<char> str)
+		{
+			var hasher = Hasher.Create();
+			hasher.Add(str);
+			return hasher.Finalize64();
+		}
+
+		public static uint HashLower32(ReadOnlySpan<char> str)
+		{
+			var hasher = Hasher.Create();
+			hasher.AddLowerInvariant(str);
+			return hasher.Finalize32();
+		}
+
+		public static ulong HashLower64(ReadOnlySpan<char> str)
+		{
+			var hasher = Hasher.Create();
+			hasher.AddLowerInvariant(str);
+			return hasher.Finalize64();
+		}
+
+		public static ulong Hash64<T>(ref T instance, int byteCount) where T : struct
+		{
+			var bytes = MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan<T>(ref instance, 1));
+			var hasher = Hasher.Create();
+			hasher.Add(bytes);
+			return hasher.Finalize64();
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ulong Hash64(float x, float y)
+		{
+			var hasher = Hasher.Create();
+			SingleUIntUnion union;
+			union.UIntValue = 0;
+			union.SingleValue = x;
+			hasher.Add(union.UIntValue);
+			union.SingleValue = y;
+			hasher.Add(union.UIntValue);
+			return hasher.Finalize64();
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ulong Hash64(float x, float y, float z)
+		{
+			var hasher = Hasher.Create();
+			SingleUIntUnion union;
+			union.UIntValue = 0;
+			union.SingleValue = x;
+			hasher.Add(union.UIntValue);
+			union.SingleValue = y;
+			hasher.Add(union.UIntValue);
+			union.SingleValue = z;
+			hasher.Add(union.UIntValue);
+			return hasher.Finalize64();
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ulong Hash64(float x, float y, float z, float w)
+		{
+			var hasher = Hasher.Create();
+			SingleUIntUnion union;
+			union.UIntValue = 0;
+
+			union.SingleValue = x;
+			ulong input = union.UIntValue;
+			union.SingleValue = y;
+			input |= (union.UIntValue << 32);
+			hasher.Add(input);
+
+			union.SingleValue = z;
+			input = union.UIntValue;
+			union.SingleValue = w;
+			input |= (union.UIntValue << 32);
+			hasher.Add(input);
+
+			return hasher.Finalize64();
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static uint Hash32(float x, float y)
+		{
+			var hasher = Hasher.Create();
+			SingleUIntUnion union;
+			union.UIntValue = 0;
+			union.SingleValue = x;
+			hasher.Add(union.UIntValue);
+			union.SingleValue = y;
+			hasher.Add(union.UIntValue);
+			return hasher.Finalize32();
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static uint Hash32(float x, float y, float z)
+		{
+			var hasher = Hasher.Create();
+			SingleUIntUnion union;
+			union.UIntValue = 0;
+			union.SingleValue = x;
+			hasher.Add(union.UIntValue);
+			union.SingleValue = y;
+			hasher.Add(union.UIntValue);
+			union.SingleValue = z;
+			hasher.Add(union.UIntValue);
+			return hasher.Finalize32();
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static uint Hash32(float x, float y, float z, float w)
+		{
+			SingleUIntUnion union;
+			union.UIntValue = 0;
+
+			union.SingleValue = x;
+			ulong input1 = union.UIntValue;
+			union.SingleValue = y;
+			input1 |= (union.UIntValue << 32);
+
+			union.SingleValue = z;
+			ulong input2 = union.UIntValue;
+			union.SingleValue = w;
+			input2 |= (union.UIntValue << 32);
+
+			return Hash32(input1, input2);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static uint Hash32(ulong one, ulong two)
+		{
+			return HashUtil.XorFold64To32(Hash64(one, two));
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ulong Hash64(ulong one, ulong two)
+		{
+			// inlined partial murmur hash
+			const ulong M = 0xc6a4a7935bd1e995ul;
+			ulong hash = M;
+
+			one *= M;
+			one ^= one >> 47;
+			one *= M;
+			hash ^= one;
+			hash *= M;
+
+			two *= M;
+			two ^= two >> 47;
+			two *= M;
+			hash ^= two;
+			hash *= M;
+
+			// finalize
+			hash ^= hash >> 47;
+			hash *= M;
+			hash ^= hash >> 47;
+
+			return hash;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static uint XorFold64To32(ulong value)
+		{
+			unchecked
+			{
+				return (uint)value ^ (uint)(value >> 32);
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ushort XorFold64To16(ulong value)
+		{
+			return XorFold32To16(XorFold64To32(value));
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ushort XorFold32To16(uint value)
+		{
+			unchecked
+			{
+				return (ushort)(value ^ (value >> 16));
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ushort XorFold16To8(ushort value)
+		{
+			unchecked
+			{
+				return (byte)(value ^ (byte)(value >> 8));
+			}
+		}
+
+		// weyl constants
+		private const uint c_WEYLW0 = 0x3504f333u;   // 3*2309*128413 
+		private const uint c_WEYLW1 = 0xf1bbcdcbu;   // 7*349*1660097 
+		private const uint c_WEYLM = 741103597u;    // 13*83*686843
+
+		/// <summary>
+		/// Weyl hash
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static uint Combine(uint x, uint y)
+		{
+			x *= c_WEYLW0;
+			y *= c_WEYLW1;
+			x ^= y;
+			x *= c_WEYLM;
+			return x;
+		}
+
+		public static uint FNV1aLower(ReadOnlySpan<char> str)
+		{
+			unchecked
+			{
+				uint retval = (uint)2166136261u;
+				for (int i = 0; i < str.Length; i++)
+				{
+					retval = (retval ^ (uint)char.ToLower(str[i])) * 16777619;
+				}
+				retval += retval << 13;
+				retval ^= retval >> 7;
+				retval += retval << 3;
+				retval ^= retval >> 17;
+				retval += retval << 5;
+				return retval;
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static uint FNV1a(ReadOnlySpan<char> str)
+		{
+			unchecked
+			{
+				uint retval = (uint)2166136261u;
+				for (int i = 0; i < str.Length; i++)
+				{
+					retval = (retval ^ (uint)str[i]) * 16777619;
+				}
+				retval += retval << 13;
+				retval ^= retval >> 7;
+				retval += retval << 3;
+				retval ^= retval >> 17;
+				retval += retval << 5;
+				return retval;
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static uint FNV1a(ReadOnlySpan<byte> data)
+		{
+			unchecked
+			{
+				uint retval = (uint)2166136261u;
+				for (int i = 0; i < data.Length; i++)
+				{
+					retval = (retval ^ (uint)data[i]) * 16777619;
+				}
+				retval += retval << 13;
+				retval ^= retval >> 7;
+				retval += retval << 3;
+				retval ^= retval >> 17;
+				retval += retval << 5;
+				return retval;
+			}
+		}
+	}
+}
