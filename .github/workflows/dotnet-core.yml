@@ -16,8 +16,7 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.x
-        include-prerelease: true
+        dotnet-version: '5.0.100-preview.8.20417.9'
     - name: Install dependencies
       run: dotnet restore
     - name: Build
@@ -29,4 +28,4 @@ jobs:
       with:
           PROJECT_FILE_PATH: Lidgren.Core.csproj
           NUGET_KEY: ${{secrets.NUGET_KEY}}
-          VERSION_STATIC: 1.0.0
+          VERSION_STATIC: 1.0.1
