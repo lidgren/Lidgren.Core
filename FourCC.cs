@@ -5,6 +5,9 @@ using System.Runtime.InteropServices;
 
 namespace Lidgren.Core
 {
+	/// <summary>
+	/// Immutable 32 bit struct convertable to/from fourcc notation
+	/// </summary>
 	[DebuggerDisplay("{Readable}")]
 	[StructLayout(LayoutKind.Sequential, Size = 4)]
 	public readonly struct FourCC : IEquatable<FourCC>, IEquatable<uint>

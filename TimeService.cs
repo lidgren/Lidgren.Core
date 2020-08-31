@@ -206,6 +206,9 @@ namespace Lidgren.Core
 	}
 
 	// TODO: make ref struct when they support IDisposable
+	/// <summary>
+	/// Usage:  var timer = using(new SimpleTimer("mything"));
+	/// </summary>
 	public struct SimpleTimer : IDisposable
 	{
 		private long m_started;

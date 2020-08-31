@@ -5,6 +5,10 @@ namespace Lidgren.Core
 {
 	public partial class FastList<T>
 	{
+		//
+		// foreach support; however, iterating over myList.ReadOnlySpan instead is recommended
+		//
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public FastListIterator GetEnumerator()
 		{
