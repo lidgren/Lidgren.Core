@@ -212,7 +212,7 @@ namespace Lidgren.Core
 			{
 				if (match(m_buffer[offset + idx]) == true)
 				{
-					if (retval == null)
+					if (retval is null)
 						retval = new FastList<T>(count - idx);
 					retval.Add(m_buffer[offset + idx]);
 				}

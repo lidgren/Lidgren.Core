@@ -21,7 +21,7 @@ namespace Lidgren.Core
 		{
 			var myRef = ob;
 
-			if (lockObject == null)
+			if (lockObject is null)
 				lockObject = myRef;
 
 			if (myRef != null)

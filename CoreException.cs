@@ -55,7 +55,7 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		public static void ThrowNotImplemented(string message = null)
 		{
-			throw new CoreException(message == null ? "Not implemented" : message);
+			throw new CoreException(message is null ? "Not implemented" : message);
 		}
 
 		/// <summary>
