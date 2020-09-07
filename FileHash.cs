@@ -5,7 +5,7 @@ using System.IO;
 namespace Lidgren.Core
 {
 	/// <summary>
-	/// Hash using hasher
+	/// Hash files using Hasher
 	/// </summary>
 	public static class FileHash
 	{
