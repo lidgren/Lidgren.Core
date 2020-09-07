@@ -49,13 +49,9 @@ namespace Lidgren.Core
 
 		public override string ToString()
 		{
-			return new string(new char[]
-			{
-				(char)(Value & 255u),
-				(char)(Value >> 8 & 255u),
-				(char)(Value >> 16 & 255u),
-				(char)(Value >> 24 & 255u)
-			});
+			Span<char> data = stackalloc char[4];
+			ToString(data);
+			return data.ToString();
 		}
 
 		public bool Equals(FourCC other)
