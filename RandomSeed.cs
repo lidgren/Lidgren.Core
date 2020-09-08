@@ -53,7 +53,7 @@ namespace Lidgren.Core
 		}
 
 		/// <summary>
-		/// Expand 32 bit seed to 64 bit deterministicly, ensuring there are bits set in the upper part
+		/// Expand 32 bit seed to 64 bit deterministically, ensuring there are bits set in the upper part
 		/// </summary>
 		public static ulong ExpandSeed(uint seed)
 		{

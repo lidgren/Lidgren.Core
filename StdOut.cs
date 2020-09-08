@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 
 namespace Lidgren.Core
 {
@@ -79,7 +77,6 @@ namespace Lidgren.Core
 		private const string k_escapeReset = "\u001b[m";
 		private const string k_escapeForegroundColor = "\u001b[38;2;";
 		private const string k_escapeBackgroundColor = "\u001b[48;2;";
-
 		private const string k_escapeClearScreen = "\u001b[2Jm\u001b[H";
 
 		public static void ClearScreen(ReadOnlySpan<char> hexBackgroundColor = default)

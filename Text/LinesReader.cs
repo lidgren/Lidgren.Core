@@ -20,18 +20,18 @@ namespace Lidgren.Core
 
 		public LinesReader(string filename, char[] buffer = null)
 		{
-			if (buffer == null)
-			{
-				m_buffer = ArrayPool<char>.Shared.Rent(1024 * 32);
-				m_bufferCreated = true;
-			}
-			else
-			{
-				m_buffer = buffer;
-			}
-
 			try
 			{
+				if (buffer is null)
+				{
+					m_buffer = ArrayPool<char>.Shared.Rent(1024 * 32);
+					m_bufferCreated = true;
+				}
+				else
+				{
+					m_buffer = buffer;
+				}
+
 				var fs = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
 				m_rdr = new StreamReader(fs);
 			}
@@ -39,7 +39,7 @@ namespace Lidgren.Core
 			{
 
 				DisposeUtils.Dispose(ref m_rdr);
-				if (m_bufferCreated == true && m_buffer != null)
+				if (m_bufferCreated == true)
 					ArrayPool<char>.Shared.Return(m_buffer);
 				m_buffer = null;
 				throw;
@@ -48,25 +48,25 @@ namespace Lidgren.Core
 
 		public LinesReader(Stream stream, char[] buffer = null)
 		{
-			if (buffer == null)
-			{
-				m_buffer = ArrayPool<char>.Shared.Rent(1024 * 32);
-				m_bufferCreated = true;
-			}
-			else
-			{
-				m_buffer = buffer;
-			}
-
 			try
 			{
+				if (buffer is null)
+				{
+					m_buffer = ArrayPool<char>.Shared.Rent(1024 * 32);
+					m_bufferCreated = true;
+				}
+				else
+				{
+					m_buffer = buffer;
+				}
+
 				m_rdr = new StreamReader(stream);
 			}
 			catch
 			{
 
 				DisposeUtils.Dispose(ref m_rdr);
-				if (m_bufferCreated == true && m_buffer != null)
+				if (m_bufferCreated == true)
 					ArrayPool<char>.Shared.Return(m_buffer);
 				m_buffer = null;
 				throw;
@@ -75,15 +75,14 @@ namespace Lidgren.Core
 
 		public void Dispose()
 		{
-			if (m_rdr != null)
+			DisposeUtils.Dispose(ref m_rdr);
+
+			if (m_bufferCreated == true)
 			{
-				m_rdr.Close();
-				DisposeUtils.Dispose(ref m_rdr);
-			}
-			if (m_bufferCreated == true && m_buffer != null)
-			{
-				ArrayPool<char>.Shared.Return(m_buffer);
+				var buf = m_buffer;
 				m_buffer = null;
+				if (buf != null)
+					ArrayPool<char>.Shared.Return(buf);
 			}
 		}
 

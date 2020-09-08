@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 namespace Lidgren.Core
 {
 	/// <summary>
-	/// Based on Austin Applebys implementation of MurmurHash64A hash
+	/// Incremental hashing based on MurmurHash64A by Austin Appleby
 	/// </summary>
 	[StructLayout(LayoutKind.Auto)]
 	public ref struct Hasher

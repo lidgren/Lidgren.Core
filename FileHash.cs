@@ -12,7 +12,7 @@ namespace Lidgren.Core
 		public static ulong Hash(string fileName)
 		{
 			using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
-				return Hash(fs);
+				return Hash(fs, out _);
 		}
 
 		public static ulong Hash(ReadOnlySpan<byte> bytes)
@@ -22,38 +22,20 @@ namespace Lidgren.Core
 			return hasher.Finalize64();
 		}
 
-		public static ulong Hash(Stream stream)
+		public static ulong Hash(Stream stream, out int bytesHashedCount)
 		{
 			// read 4k at a time
 			const int bufSize = 1024 * 4;
 			var backing = ArrayPool<byte>.Shared.Rent(bufSize);
 			var buffer = backing.AsSpan(0, bufSize);
 			var hasher = Hasher.Create();
-			for (; ; )
-			{
-				int numBytes = stream.Read(buffer);
-				if (numBytes > 0)
-					hasher.Add(buffer.Slice(0, numBytes));
-				else
-					break;
-			}
-			return hasher.Finalize64();
-		}
-
-		public static ulong Hash(Stream stream, out int bytesHashed)
-		{
-			// read 4k at a time
-			const int bufSize = 1024 * 4;
-			var backing = ArrayPool<byte>.Shared.Rent(bufSize);
-			var buffer = backing.AsSpan(0, bufSize);
-			var hasher = Hasher.Create();
-			bytesHashed = 0;
+			bytesHashedCount = 0;
 			for (; ; )
 			{
 				int numBytes = stream.Read(buffer);
 				if (numBytes > 0)
 				{
-					bytesHashed += numBytes;
+					bytesHashedCount += numBytes;
 					hasher.Add(buffer.Slice(0, numBytes));
 				}
 				else

@@ -13,6 +13,7 @@ namespace Lidgren.Core
 	/// * ref return methods
 	/// * pop/trypop
 	/// * Very little validation; except in DEBUG
+	/// * Best iterated over myFastList.ReadOnlySpan
 	/// </summary>
 	[DebuggerDisplay("FastList<{typeof(T).Name}> {Count}/{Capacity}")]
 	public partial class FastList<T>
