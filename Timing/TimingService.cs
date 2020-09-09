@@ -7,8 +7,7 @@ namespace Lidgren.Core
 {
 	public static class TimingService
 	{
-		private static FastList<TimingThread> s_threads = new FastList<TimingThread>(32);
-
+		private static FastList<TimingThread> s_threads = new FastList<TimingThread>(16);
 		private static FastList<Action<TimingThread, Memory<TimingEntry>>> s_listeners = new FastList<Action<TimingThread, Memory<TimingEntry>>>(2);
 
 		public static bool IsEnabled { get; set; }
