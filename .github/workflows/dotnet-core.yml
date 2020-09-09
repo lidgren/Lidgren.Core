@@ -28,4 +28,4 @@ jobs:
       with:
           PROJECT_FILE_PATH: Lidgren.Core.csproj
           NUGET_KEY: ${{secrets.NUGET_KEY}}
-          VERSION_STATIC: 1.0.2
+          VERSION_STATIC: 1.0.3
