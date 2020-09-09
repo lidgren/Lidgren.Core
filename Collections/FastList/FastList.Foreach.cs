@@ -28,7 +28,7 @@ namespace Lidgren.Core
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				get
 				{
-					return ref Span[Index];
+					return ref Span[Index - 1];
 				}
 			}
 
@@ -36,7 +36,7 @@ namespace Lidgren.Core
 			public bool MoveNext()
 			{
 				Index++;
-				return Index < Span.Length;
+				return Index <= Span.Length;
 			}
 		}
 	}
