@@ -7,7 +7,7 @@ namespace Lidgren.Core
 		/// <summary>
 		/// Swap places of two ranges of a span, in-place
 		/// Example:
-		///   (pivot 4) AAAABBB becomes BBBAAAA
+		///   (pivot 4) 1234BBB becomes BBB1234
 		///   (pivot 2) AABBBBB becomes BBBBBAA
 		/// </summary>
 		public static void SwapBlocks<T>(this Span<T> span, int pivot) where T : struct

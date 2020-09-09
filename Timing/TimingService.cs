@@ -47,7 +47,7 @@ namespace Lidgren.Core
 
 			if (shuttingDown)
 			{
-				Thread.Sleep(10); // give other threads some time to flush volountarily
+				Thread.Sleep(17); // give other threads some time to flush voluntarily
 
 				// forced flush; let's squeeze out the last remaining scopes in the threads
 				foreach (var thread in s_threads.ReadOnlySpan)

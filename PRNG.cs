@@ -11,7 +11,7 @@ namespace Lidgren.Core
 	public static class PRNG
 	{
 		/// <summary>
-		/// This is not thread local data; because that would be slower in the general case
+		/// This is not thread local data by design because that would be slower in the general case
 		/// Whenever concurrency might occur; use the ref state overloads with a local variable instead
 		/// </summary>
 		private static ulong s_state = RandomSeed.GetUInt64();

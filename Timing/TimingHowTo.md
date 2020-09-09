@@ -1,5 +1,6 @@
 ﻿
 # How to use TimingService
+TimingService is a low overhead instrumented profiling tool.
 
 ### Initialization
 
@@ -15,13 +16,13 @@ void MyFunction()
 {
 	using var _ = new Timing("someName"); // constant strings are encouraged to avoid allocations
 
-	// do time consuming stuff here
+	// do stuff we want to measure here
 }
 ```
 
 ### Shutdown
 
-This is necessary for the myfile.json so be properly formatted and all timing events included.
+This is necessary for all timing events to be included and myfile.json to be properly terminated.
 ```
 TimingService.TriggerFlush(true); // this will set TimingService.IsEnabled to false
 chrome.Dispose();
