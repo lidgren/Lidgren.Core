@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30420.98
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lidgren.Core", "src\Lidgren.Core.csproj", "{B5E808BF-CBEC-4A11-A876-6FB3A59B4B91}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "tests\UnitTests.csproj", "{576D4539-C404-4122-9875-42A22F939920}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B5E808BF-CBEC-4A11-A876-6FB3A59B4B91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5E808BF-CBEC-4A11-A876-6FB3A59B4B91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5E808BF-CBEC-4A11-A876-6FB3A59B4B91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5E808BF-CBEC-4A11-A876-6FB3A59B4B91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{576D4539-C404-4122-9875-42A22F939920}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{576D4539-C404-4122-9875-42A22F939920}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{576D4539-C404-4122-9875-42A22F939920}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{576D4539-C404-4122-9875-42A22F939920}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3F67C6FB-4519-4CF3-8408-B842DB5CB434}
+	EndGlobalSection
+EndGlobal
