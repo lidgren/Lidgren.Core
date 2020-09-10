@@ -23,9 +23,9 @@ jobs:
       run: dotnet build --configuration Release --no-restore
     - name: Test
       run: dotnet test --no-restore --verbosity normal
-    - name: Publish src/Lidgren.Core
+    - name: Publish Lidgren.Core
       uses: brandedoutcast/publish-nuget@v2.5.5
       with:
-          PROJECT_FILE_PATH: Lidgren.Core.csproj
+          PROJECT_FILE_PATH: src/Lidgren.Core.csproj
           NUGET_KEY: ${{secrets.NUGET_KEY}}
-          VERSION_STATIC: 1.0.3
+          VERSION_STATIC: 1.0.4
