@@ -13,7 +13,7 @@ namespace Lidgren.Core
 		/// <summary>
 		/// Generates a 32 bit random seed by combining various factors that are very hard to predict
 		/// </summary>
-		public static  uint GetUInt32()
+		public static uint GetUInt32()
 		{
 			unchecked
 			{

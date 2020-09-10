@@ -14,26 +14,36 @@ namespace Lidgren.Core
 	{
 		public static readonly FourCC Empty = new FourCC(0);
 
+		/// <summary>
+		/// Big endian value; with regards to text
+		/// </summary>
 		public readonly uint Value;
 
 		public string Readable => ToString();
 
 		public FourCC(string str)
 		{
-			CoreException.Assert(str.Length == 4);
+			CoreException.Assert(str.Length >= 4);
 			Value = (uint)((uint)str[3] << 24 | (uint)str[2] << 16 | (uint)str[1] << 8 | str[0]);
 		}
 
-		public FourCC(char byte1, char byte2, char byte3, char byte4)
+		/// <summary>
+		/// Pass bytes in reading order; ie { 'm', 'p', '4', 'a' }
+		/// </summary>
+		public FourCC(char a, char b, char c, char d)
 		{
-			Value = (uint)((uint)byte4 << 24 | (uint)byte3 << 16 | (uint)byte2 << 8 | byte1);
+			Value = (uint)((uint)d << 24 | (uint)c << 16 | (uint)b << 8 | (uint)a);
 		}
 
 		public FourCC(ReadOnlySpan<byte> data)
 		{
-			Value = BinaryPrimitives.ReadUInt32LittleEndian(data);
+			CoreException.Assert(data.Length >= 4);
+			Value = (uint)((uint)data[3] << 24 | (uint)data[2] << 16 | (uint)data[1] << 8 | (uint)data[0]);
 		}
 
+		/// <summary>
+		/// Note; value should be big endian
+		/// </summary>
 		public FourCC(uint value)
 		{
 			Value = value;
@@ -61,7 +71,7 @@ namespace Lidgren.Core
 
 		public bool Equals(ReadOnlySpan<byte> bytes)
 		{
-			var value = BinaryPrimitives.ReadUInt32LittleEndian(bytes);
+			var value = BinaryPrimitives.ReadUInt32BigEndian(bytes);
 			return value == Value;
 		}
 
@@ -70,8 +80,16 @@ namespace Lidgren.Core
 			CoreException.Assert(text.Length == 4);
 			if (text.Length < 4)
 				return false;
-			var textValue = (uint)((uint)text[3] << 24 | (uint)text[2] << 16 | (uint)text[1] << 8 | text[0]);
-			return textValue == Value;
+
+			throw new NotImplementedException();
+
+			//return text[0] == (char)(Value & 255u) &&
+			//into[1] = (char)(Value >> 8 & 255u);
+			//into[2] = (char)(Value >> 16 & 255u);
+			//into[3] = (char)(Value >> 24 & 255u);
+			//
+			//var textValue = (uint)((uint)text[3] << 24 | (uint)text[2] << 16 | (uint)text[1] << 8 | text[0]);
+			//return textValue == Value;
 		}
 
 		public override bool Equals(object obj)

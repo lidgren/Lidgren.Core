@@ -18,6 +18,8 @@ namespace Lidgren.Core
 	[DebuggerDisplay("FastList<{typeof(T).Name}> {Count}/{Capacity}")]
 	public partial class FastList<T>
 	{
+		private static readonly T[] s_emptyArray = new T[] { };
+
 		private T[] m_buffer;
 		private int m_offset;
 		private int m_count;
@@ -33,8 +35,6 @@ namespace Lidgren.Core
 					Compact(); // ensure Span can operate
 			}
 		}
-
-		private static readonly T[] s_emptyArray = new T[] { };
 
 		public int Capacity
 		{
@@ -111,11 +111,12 @@ namespace Lidgren.Core
 		/// </summary>
 		public Memory<T> Memory => new Memory<T>(m_buffer, m_offset, m_count);
 
-		public FastList(int initialCapacity)
+		public FastList(int initialCapacity = 0)
 		{
 			if (initialCapacity == 0)
 				m_buffer = s_emptyArray;
-			m_buffer = new T[initialCapacity];
+			else
+				m_buffer = new T[initialCapacity];
 			m_count = 0;
 			m_offset = 0;
 		}

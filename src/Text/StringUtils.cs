@@ -81,5 +81,17 @@ namespace Lidgren.Core
 			int written = ToHex(value, tmp, zeroPadToCharLength);
 			return tmp.Slice(0, written).ToString();
 		}
+
+		private const string c_doubleFixedPoint = "0.###################################################################################################################################################################################################################################################################################################################################################";
+
+		/// <summary>
+		/// Without scientific notation
+		/// </summary>
+		public static string DoubleToString(double value, IFormatProvider culture = null)
+		{
+			if (culture != null)
+				return value.ToString(c_doubleFixedPoint, culture);
+			return value.ToString(c_doubleFixedPoint, System.Globalization.CultureInfo.InvariantCulture);
+		}
 	}
 }
