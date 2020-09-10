@@ -7,16 +7,16 @@ namespace Lidgren.Core
 	/// Thread safe pool of objects
 	/// Example usage: new Pool<MyClass>(() => new MyClass(), 35);
 	/// </summary>
-	public sealed class Pool<T> where T : class // only makes sense for class
+	public sealed class Pool<T> where T : class
 	{
 		public delegate T CreationDelegate();
 
 		private readonly CreationDelegate m_create;
 
 		private T[] m_items;
-		private int m_itemsInPoolCount;
 		private int m_maxPooledItems;
 
+		private int m_itemsInPoolCount;
 		public int Count { get { return m_itemsInPoolCount; } }
 
 		public Pool(CreationDelegate creator, int maxPoolItems)
