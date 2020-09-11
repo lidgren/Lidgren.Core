@@ -8,7 +8,7 @@ namespace UnitTests
 	public class UlidTests
 	{
 		[TestMethod]
-		public void Test()
+		public void UlidTest()
 		{
 			// just create
 			var anything = Ulid.Create();

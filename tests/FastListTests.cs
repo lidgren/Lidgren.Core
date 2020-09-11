@@ -10,7 +10,7 @@ namespace UnitTests
 	public class FastListTests
 	{
 		[TestMethod]
-		public void Test()
+		public void FastListTest()
 		{
 			var facit = new List<int>(4);
 			var fast = new FastList<int>();
@@ -255,6 +255,21 @@ namespace UnitTests
 
 			for (int i = 0; i < fastItems.Length; i++)
 				Assert.AreEqual(facit[i], fastItems[i]);
+		}
+
+		[TestMethod]
+		public void AddListTest()
+		{
+			var add = new AddList<int>();
+			add.Add(12);
+			add.Add(13);
+			add.Add(14);
+			Assert.AreEqual(3, add.Count);
+			var span = add.ReadOnlySpan;
+			Assert.AreEqual(12, span[0]);
+			Assert.AreEqual(13, span[1]);
+			Assert.AreEqual(14, span[2]);
+			Assert.AreEqual(3, span.Length);
 		}
 	}
 }
