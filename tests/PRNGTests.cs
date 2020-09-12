@@ -9,7 +9,7 @@ namespace UnitTests
 	public class PRNGTests
 	{
 		[TestMethod]
-		public void PRNGTest()
+		public void TestPRNG()
 		{
 			const int iterations = 10000000;
 			Console.WriteLine();

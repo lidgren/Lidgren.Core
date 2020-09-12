@@ -10,7 +10,7 @@ namespace UnitTests
 	public class FastListTests
 	{
 		[TestMethod]
-		public void FastListTest()
+		public void TestFastList()
 		{
 			var facit = new List<int>(4);
 			var fast = new FastList<int>();
@@ -258,7 +258,7 @@ namespace UnitTests
 		}
 
 		[TestMethod]
-		public void AddListTest()
+		public void TestAddList()
 		{
 			var add = new AddList<int>();
 			add.Add(12);
