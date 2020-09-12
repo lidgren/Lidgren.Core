@@ -102,12 +102,14 @@ namespace Lidgren.Core
 		// running on this thread; unless forced
 		internal void InternalFlush()
 		{
-			m_triggerFlushOnce = false;
-
-			if (m_completedCount > 0)
+			lock (m_completed) // typically not needed; but cheap if not contended anyway
 			{
-				TimingService.Flush(this, m_completed.AsMemory(0, m_completedCount));
-				m_completedCount = 0;
+				m_triggerFlushOnce = false;
+				if (m_completedCount > 0)
+				{
+					TimingService.Flush(this, m_completed.AsMemory(0, m_completedCount));
+					m_completedCount = 0;
+				}
 			}
 		}
 	}
