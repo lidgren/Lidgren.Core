@@ -11,3 +11,5 @@ Non-goals are:
 * Compatibility with older frameworks
 * Never changing API
 
+Documentation in the [wiki](https://github.com/lidgren/Lidgren.Core/wiki) or .md files within project
+
