@@ -52,7 +52,7 @@ namespace UnitTests
 			JobService.ForEachAction("feActionFF", actionsList, argument, null, null);
 
 			// schedule work to be done on each argument in list; blocks until all has completed
-			JobService.ForEachArgumentBlock("feArgBlk", action, argumentsList);
+			JobService.ForEachArgumentBlock<object>("feArgBlk", action, argumentsList);
 
 			// schedule work to be done on each argument in list; when all completed call anotherAction(anotherArgument); returns immediately
 			JobService.ForEachArgument("feArgWc", action, argumentsList, anotherAction, anotherArgument);

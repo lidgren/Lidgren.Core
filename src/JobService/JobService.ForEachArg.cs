@@ -28,7 +28,7 @@ namespace Lidgren.Core
 		/// <summary>
 		/// Enqueue work to be called once per argument in list; blocks until all completed
 		/// </summary>
-		public static void ForEachArgumentBlock(string name, Action<object> work, ReadOnlySpan<object> arguments)
+		public static void ForEachArgumentBlock<TArg>(string name, Action<object> work, ReadOnlySpan<TArg> arguments)
 		{
 			if (arguments.Length == 0)
 				return;

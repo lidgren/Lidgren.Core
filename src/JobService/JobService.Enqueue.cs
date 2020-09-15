@@ -74,7 +74,16 @@ namespace Lidgren.Core
 		/// </summary>
 		public static void EnqueueWideBlock(string name, Action<object> work, object argument)
 		{
+			EnqueueWideBlock(int.MaxValue, name, work, argument);
+		}
+
+		/// <summary>
+		/// Enqueue work to be run (available threads, but max maxConcurrency) times concurrently; blocks until all has completed
+		/// </summary>
+		public static void EnqueueWideBlock(int maxConcurrency, string name, Action<object> work, object argument)
+		{
 			int numJobs = s_workers.Length - 1; // -1 because we assume local thread is one of the worker threads
+			numJobs = Math.Min(numJobs, maxConcurrency - 1);
 
 			var completion = JobCompletion.Acquire();
 			completion.ContinuationAtCount = -1;
