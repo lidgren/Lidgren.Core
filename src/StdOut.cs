@@ -23,6 +23,15 @@ namespace Lidgren.Core
 		/// <summary>
 		/// Writes to console
 		/// </summary>
+		public static void WriteLine()
+		{
+			lock (s_lock)
+				Console.Out.WriteLine();
+		}
+
+		/// <summary>
+		/// Writes to console
+		/// </summary>
 		public static void Write(ReadOnlySpan<char> text)
 		{
 			lock (s_lock)
