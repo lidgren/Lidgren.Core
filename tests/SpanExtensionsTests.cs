@@ -72,5 +72,35 @@ namespace UnitTests
 				}
 			}
 		}
+
+		[TestMethod]
+		public void TestSpanExtensions()
+		{
+			var arr = new byte[1024];
+
+			var span = arr.AsSpan();
+			span.WriteBool(true);
+			span.WriteDouble(1.2);
+			span.WriteString("Pararibulitis");
+			span.WriteUInt16(12);
+			span.WriteInt32(-120);
+			span.WriteString("Pickle Rick");
+
+			var len = arr.Length - span.Length;
+
+			var rdr = new ReadOnlySpan<byte>(arr, 0, len);
+			Assert.IsTrue(rdr.ReadBool());
+			Assert.AreEqual(1.2, rdr.ReadDouble());
+			Assert.AreEqual("Pararibulitis", rdr.ReadString());
+			Assert.AreEqual(12, rdr.ReadUInt16());
+			Assert.AreEqual(-120, rdr.ReadInt32());
+
+			var tmp = new char[32];
+			var plen = rdr.ReadString(tmp.AsSpan());
+			Assert.AreEqual("Pickle Rick".Length, plen);
+			Assert.IsTrue(tmp.AsSpan(0, plen).SequenceEqual("Pickle Rick".AsSpan()));
+
+			Assert.AreEqual(0, rdr.Length);
+		}
 	}
 }

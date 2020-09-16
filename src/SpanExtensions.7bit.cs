@@ -20,15 +20,15 @@ namespace Lidgren.Core
 	public static partial class SpanExtensions
 	{
 		/// <summary>
-		/// Writes UInt64 as a 7 bit encoded number (variable length: 1 to 9 bytes) and reduces span to remaining data
+		/// Writes UInt64 as a 7 bit encoded number (variable length: 1 to 9 bytes) and reduces span to remaining data; returns number of bytes written
 		/// </summary>
-		public static void WriteVariable(ref this Span<byte> span, ulong value)
+		public static int WriteVariable(ref this Span<byte> span, ulong value)
 		{
 			if (value < 0x80)
 			{
 				span[0] = (byte)value;
 				span = span.Slice(1);
-				return;
+				return 1;
 			}
 
 			span[0] = (byte)(value | 0x80);
@@ -38,7 +38,7 @@ namespace Lidgren.Core
 			{
 				span[1] = (byte)value;
 				span = span.Slice(2);
-				return;
+				return 2;
 			}
 
 			span[1] = (byte)(value | 0x80);
@@ -48,7 +48,7 @@ namespace Lidgren.Core
 			{
 				span[2] = (byte)value;
 				span = span.Slice(3);
-				return;
+				return 3;
 			}
 
 			span[2] = (byte)(value | 0x80);
@@ -58,7 +58,7 @@ namespace Lidgren.Core
 			{
 				span[3] = (byte)value;
 				span = span.Slice(4);
-				return;
+				return 4;
 			}
 
 			span[3] = (byte)(value | 0x80);
@@ -68,7 +68,7 @@ namespace Lidgren.Core
 			{
 				span[4] = (byte)value;
 				span = span.Slice(5);
-				return;
+				return 5;
 			}
 
 			span[4] = (byte)(value | 0x80);
@@ -78,7 +78,7 @@ namespace Lidgren.Core
 			{
 				span[5] = (byte)value;
 				span = span.Slice(6);
-				return;
+				return 6;
 			}
 
 			span[5] = (byte)(value | 0x80);
@@ -88,7 +88,7 @@ namespace Lidgren.Core
 			{
 				span[6] = (byte)value;
 				span = span.Slice(7);
-				return;
+				return 7;
 			}
 
 			span[6] = (byte)(value | 0x80);
@@ -98,7 +98,7 @@ namespace Lidgren.Core
 			{
 				span[7] = (byte)value;
 				span = span.Slice(8);
-				return;
+				return 8;
 			}
 
 			span[7] = (byte)(value | 0x80);
@@ -106,18 +106,18 @@ namespace Lidgren.Core
 
 			span[8] = (byte)value;
 			span = span.Slice(9);
-			return;
+			return 9;
 		}
 
 		/// <summary>
 		/// Writes Int64 as a 7 bit encoded number (variable length: 1 to 9 bytes) and reduces span to remaining data
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void WriteVariable(ref this Span<byte> span, long value)
+		public static int WriteVariable(ref this Span<byte> span, long value)
 		{
 			// zigzag encode
 			var uval = (ulong)((value << 1) ^ (value >> 63));
-			WriteVariable(ref span, uval);
+			return WriteVariable(ref span, uval);
 		}
 
 		/// <summary>
