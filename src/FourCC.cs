@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -92,7 +93,7 @@ namespace Lidgren.Core
 			//return textValue == Value;
 		}
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			return obj != null && obj is FourCC && this.Equals((FourCC)obj);
 		}

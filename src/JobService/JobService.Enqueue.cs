@@ -31,6 +31,7 @@ namespace Lidgren.Core
 		/// </summary>
 		public static void Enqueue(string name, Action<object> work, object argument)
 		{
+			CoreException.Assert(s_workers != null, "JobService not initialized");
 			EnqueueInternal(name, work, argument, null);
 		}
 
@@ -39,6 +40,7 @@ namespace Lidgren.Core
 		/// </summary>
 		public static void Enqueue(Action<object> work, object argument = null)
 		{
+			CoreException.Assert(s_workers != null, "JobService not initialized");
 			EnqueueInternal("unnamed", work, argument, null);
 		}
 
@@ -47,6 +49,7 @@ namespace Lidgren.Core
 		/// </summary>
 		public static void Enqueue(string name, Action<object> work, object argument, Action<object> continuation, object continuationArgument = null, string continuationName = "continuation")
 		{
+			CoreException.Assert(s_workers != null, "JobService not initialized");
 			var completion = JobCompletion.Acquire();
 			completion.Continuation = continuation;
 			completion.ContinuationArgument = continuationArgument;
@@ -65,6 +68,7 @@ namespace Lidgren.Core
 		/// </summary>
 		public static void EnqueueWide(string name, Action<object> work, object argument)
 		{
+			CoreException.Assert(s_workers != null, "JobService not initialized");
 			for (int i = 0; i < s_workers.Length; i++)
 				EnqueueInternal(name, work, argument, null);
 		}
@@ -82,6 +86,7 @@ namespace Lidgren.Core
 		/// </summary>
 		public static void EnqueueWideBlock(int maxConcurrency, string name, Action<object> work, object argument)
 		{
+			CoreException.Assert(s_workers != null, "JobService not initialized");
 			int numJobs = s_workers.Length - 1; // -1 because we assume local thread is one of the worker threads
 			numJobs = Math.Min(numJobs, maxConcurrency - 1);
 
@@ -98,6 +103,7 @@ namespace Lidgren.Core
 		/// </summary>
 		public static void EnqueueWide(string name, Action<object> work, object argument, Action<object> continuation, object continuationArgument)
 		{
+			CoreException.Assert(s_workers != null, "JobService not initialized");
 			int numJobs = s_workers.Length;
 
 			var completion = JobCompletion.Acquire();
@@ -110,7 +116,5 @@ namespace Lidgren.Core
 			for (int i = 0; i < numJobs; i++)
 				EnqueueInternal(name, work, argument, completion);
 		}
-
-		
 	}
 }

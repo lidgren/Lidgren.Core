@@ -9,6 +9,8 @@ namespace Lidgren.Core
 		/// </summary>
 		public static void ForEachArgument(string name, Action<object> work, ReadOnlySpan<object> arguments, Action<object> continuation, object continuationArgument)
 		{
+			CoreException.Assert(s_workers != null, "JobService not initialized");
+
 			int numJobs = arguments.Length;
 
 			if (numJobs == 0)
@@ -30,6 +32,8 @@ namespace Lidgren.Core
 		/// </summary>
 		public static void ForEachArgumentBlock<TArg>(string name, Action<object> work, ReadOnlySpan<TArg> arguments)
 		{
+			CoreException.Assert(s_workers != null, "JobService not initialized");
+
 			if (arguments.Length == 0)
 				return;
 
@@ -49,7 +53,10 @@ namespace Lidgren.Core
 				work(arguments[0]);
 
 			// then, try to steal relevant jobs if possible
-			while (JobService.ExecuteOneJob(null, completion))
+
+			// am I running within a job? try fetching the JobWorker for this thread
+			var localWorker = JobWorker.WorkerForThread;
+			while (JobService.ExecuteOneJob(localWorker, completion))
 			;
 
 			completion.WaitAndRelease(numJobs);

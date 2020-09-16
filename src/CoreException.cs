@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
@@ -17,12 +18,12 @@ namespace Lidgren.Core
 		{
 		}
 
-		public CoreException(string message)
+		public CoreException(string? message)
 			: base(message)
 		{
 		}
 
-		public CoreException(string message, Exception inner)
+		public CoreException(string? message, Exception? inner)
 			: base(message, inner)
 		{
 		}
@@ -47,13 +48,13 @@ namespace Lidgren.Core
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static void Throw(string message = null, Exception inner = null)
+		public static void Throw(string? message = null, Exception? inner = null)
 		{
 			throw new CoreException(message, inner);
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static void ThrowNotImplemented(string message = null)
+		public static void ThrowNotImplemented(string? message = null)
 		{
 			throw new CoreException(message is null ? "Not implemented" : message);
 		}

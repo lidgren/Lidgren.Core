@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -7,7 +8,7 @@ namespace Lidgren.Core
 {
 	public class ChromeTraceTimingConsumer : IDisposable
 	{
-		private StreamWriter m_writer;
+		private StreamWriter? m_writer;
 		private readonly HashSet<TimingThread> m_seen = new HashSet<TimingThread>(32);
 
 		private double m_invFrequencyToMicros;
@@ -32,15 +33,13 @@ namespace Lidgren.Core
 		{
 			var span = entries.Span;
 
-			using var _ = new Timing("chromeTimingFlush");
-
 			lock (m_seen)
 			{
 				if (m_seen.Contains(thread) == false)
 				{
 					// output thread name to chrome trace
 					// we can affort to do this inefficiently since it's only done once per thread
-					m_writer.WriteLine(", { \"name\": \"thread_name\", \"ph\": \"M\", \"pid\": 0, \"tid\": " + thread.Index.ToString() + ", \"args\": { \"name\": \"" + thread.Name + "\" } }");
+					m_writer?.WriteLine(", { \"name\": \"thread_name\", \"ph\": \"M\", \"pid\": 0, \"tid\": " + thread.Index.ToString() + ", \"args\": { \"name\": \"" + thread.Name + "\" } }");
 					m_seen.Add(thread);
 				}
 			}
@@ -102,7 +101,7 @@ namespace Lidgren.Core
 
 				// write line to stream
 				int lineLen = buffer.Length - rem.Length;
-				m_writer.WriteLine(buffer.Slice(0, lineLen));
+				m_writer?.WriteLine(buffer.Slice(0, lineLen));
 			}
 		}
 

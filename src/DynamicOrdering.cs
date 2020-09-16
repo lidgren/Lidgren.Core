@@ -6,33 +6,22 @@ namespace Lidgren.Core
 	{
 		RequireABeforeB,
 		PreferABeforeB,
-		DoesNotMatter,
+		AnyOrder,
 		PreferBBeforeA,
 		RequireBBeforeA,
 	}
 
-	public interface IDynamicOrdered<TItem>
+	public interface IDynamicOrdered
 	{
-		DynamicOrder OrderAgainst(TItem other);
+		DynamicOrder OrderAgainst(object other);
 	}
 
 	/// <summary>
 	/// Sort ordering of items making individual ordering requests
 	/// </summary>
-	public static class DynamicOrdering<TItem>
+	public static class DynamicOrdering
 	{
-		public static TItem[] Perform<TDynItem>(ReadOnlySpan<TItem> items) where TDynItem : IDynamicOrdered<TItem>
-		{
-			return Perform(items, Compare);
-		}
-
-		private static DynamicOrder Compare(TItem a, TItem b)
-		{
-			IDynamicOrdered<TItem> da = (IDynamicOrdered<TItem>)a;
-			return da.OrderAgainst(b);
-		}
-
-		public static TItem[] Perform(ReadOnlySpan<TItem> items, Func<TItem, TItem, DynamicOrder> orderFunc)
+		public static bool Perform<T>(Span<T> items, out string error) where T : IDynamicOrdered
 		{
 			int len = items.Length;
 
@@ -46,7 +35,7 @@ namespace Lidgren.Core
 				{
 					if (aidx == bidx)
 						continue;
-					var cmp = GetOrder(orderFunc, items[aidx], items[bidx]);
+					var cmp = GetOrder(items[aidx], items[bidx]);
 					if (cmp == DynamicOrder.RequireABeforeB)
 						dependenciesPerItem[bidx]++;
 				}
@@ -82,13 +71,13 @@ namespace Lidgren.Core
 					for (int b = 0; b < testInsertIndex; b++)
 					{
 						int beforeIndex = order[b];
-						var cmp = GetOrder(orderFunc, item, items[beforeIndex]);
+						var cmp = GetOrder(item, items[beforeIndex]);
 						switch (cmp)
 						{
 							case DynamicOrder.RequireABeforeB:
 								invalid = true;
 								break;
-							case DynamicOrder.DoesNotMatter:
+							case DynamicOrder.AnyOrder:
 								break;
 							case DynamicOrder.PreferABeforeB:
 								score--;
@@ -107,7 +96,7 @@ namespace Lidgren.Core
 					for (int a = testInsertIndex; a < order.Count; a++)
 					{
 						int afterIndex = order[a];
-						var cmp = GetOrder(orderFunc, item, items[afterIndex]);
+						var cmp = GetOrder(item, items[afterIndex]);
 						switch (cmp)
 						{
 							case DynamicOrder.RequireBBeforeA:
@@ -120,7 +109,7 @@ namespace Lidgren.Core
 							case DynamicOrder.RequireABeforeB:
 								score++;
 								break;
-							case DynamicOrder.DoesNotMatter:
+							case DynamicOrder.AnyOrder:
 								break;
 						}
 						numPrecedingDeps += myDeps;
@@ -138,8 +127,8 @@ namespace Lidgren.Core
 
 				if (bestInsertionIndex == -1)
 				{
-					CoreException.Throw("Failed to insert " + item + " for dynamic ordering");
-					return null;
+					error = "Failed to insert " + item + " for dynamic ordering";
+					return false;
 				}
 
 				order.Insert(bestInsertionIndex, insertOriginalIndex);
@@ -150,26 +139,30 @@ namespace Lidgren.Core
 			}
 
 			// create ordered array
-			TItem[] result = new TItem[items.Length];
+			T[] result = new T[items.Length];
 			for (int i = 0; i < result.Length; i++)
 				result[i] = items[order[i]];
+			result.AsSpan().CopyTo(items);
 
-			return result;
+			error = string.Empty;
+			return true;
 		}
 
-		public static DynamicOrder GetOrder(Func<TItem, TItem, DynamicOrder> order, TItem a, TItem b)
+		public static DynamicOrder GetOrder(IDynamicOrdered a, IDynamicOrdered b)
 		{
-			var cmp = order(a, b);
-			var rev = order(b, a);
-
-			return Reconcile(cmp, rev);
+			var AtoB = a.OrderAgainst(b);
+			var BtoA = b.OrderAgainst(a);
+			return Reconcile(AtoB, BtoA);
 		}
 
+		/// <summary>
+		/// Returns dynamic order A -> B
+		/// </summary>
 		public static DynamicOrder Reconcile(DynamicOrder AtoB, DynamicOrder BtoA)
 		{
 			switch (AtoB)
 			{
-				case DynamicOrder.DoesNotMatter:
+				case DynamicOrder.AnyOrder:
 					return Reverse(BtoA);
 
 				case DynamicOrder.RequireABeforeB:
@@ -182,21 +175,21 @@ namespace Lidgren.Core
 
 				case DynamicOrder.PreferABeforeB:
 					if (BtoA == DynamicOrder.PreferABeforeB)
-						return DynamicOrder.DoesNotMatter; // clash in preferrence; but it's ok
+						return DynamicOrder.AnyOrder; // clash in preferrence; but it's ok
 					if (BtoA == DynamicOrder.RequireABeforeB)
 						return DynamicOrder.RequireBBeforeA; // require takes precedence
 					return AtoB;
 
 				case DynamicOrder.PreferBBeforeA:
 					if (BtoA == DynamicOrder.PreferBBeforeA)
-						return DynamicOrder.DoesNotMatter; // clash in preferrence; but it's ok
+						return DynamicOrder.AnyOrder; // clash in preferrence; but it's ok
 					if (BtoA == DynamicOrder.RequireBBeforeA)
 						return DynamicOrder.RequireABeforeB; // require takes precedence
 					return AtoB;
 
 				default:
 					CoreException.ThrowNotImplemented();
-					return DynamicOrder.DoesNotMatter;
+					return DynamicOrder.AnyOrder;
 			}
 		}
 
@@ -208,15 +201,15 @@ namespace Lidgren.Core
 					return DynamicOrder.RequireBBeforeA;
 				case DynamicOrder.PreferABeforeB:
 					return DynamicOrder.PreferBBeforeA;
-				case DynamicOrder.DoesNotMatter:
-					return DynamicOrder.DoesNotMatter;
+				case DynamicOrder.AnyOrder:
+					return DynamicOrder.AnyOrder;
 				case DynamicOrder.PreferBBeforeA:
 					return DynamicOrder.PreferABeforeB;
 				case DynamicOrder.RequireBBeforeA:
 					return DynamicOrder.RequireABeforeB;
 				default:
 					CoreException.ThrowNotImplemented();
-					return DynamicOrder.DoesNotMatter;
+					return DynamicOrder.AnyOrder;
 			}
 		}
 	}

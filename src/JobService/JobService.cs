@@ -8,7 +8,7 @@ namespace Lidgren.Core
 		private static JobWorker[] s_workers;
 		private static object s_setupShutdownLock = new object();
 
-		public static int WorkersCount => s_workers.Length;
+		public static int WorkersCount => s_workers == null ? 0 : s_workers.Length;
 
 		public static bool IsInitialized => s_workers != null;
 
@@ -27,6 +27,7 @@ namespace Lidgren.Core
 				switch (hw)
 				{
 					case 0:
+						workers = new JobWorker[] { }; // for nullability 
 						CoreException.Throw("Failed to determine number of HW threads");
 						break;
 					case 1:
@@ -64,7 +65,7 @@ namespace Lidgren.Core
 						workers[cnt - 1] = new JobWorker(cnt - 1, 2);
 						workers[cnt - 2] = new JobWorker(cnt - 2, 2);
 						for (int i = 2; i < cnt - 2; i++)
-							s_workers[i] = new JobWorker(i, 1);
+							workers[i] = new JobWorker(i, 1);
 						break;
 				}
 

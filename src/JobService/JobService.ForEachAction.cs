@@ -9,6 +9,8 @@ namespace Lidgren.Core
 		/// </summary>
 		public static void ForEachAction(string name, ReadOnlySpan<Action<object>> works, object argument, Action<object> continuation, object continuationArgument)
 		{
+			CoreException.Assert(s_workers != null, "JobService not initialized");
+
 			int numJobs = works.Length;
 
 			if (numJobs == 0)
@@ -36,6 +38,8 @@ namespace Lidgren.Core
 		/// </summary>
 		public static void ForEachActionBlock(string name, ReadOnlySpan<Action<object>> works, object argument)
 		{
+			CoreException.Assert(s_workers != null, "JobService not initialized");
+
 			if (works.Length == 0)
 				return;
 			if (works.Length == 1)

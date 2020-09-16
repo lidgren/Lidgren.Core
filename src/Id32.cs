@@ -1,10 +1,12 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace Lidgren.Core
 {
+
 	/// <summary>
 	/// 32 bit sequential id. Use Id32.Next() to generate. Valid ids starts at 1.
 	/// </summary>
@@ -65,9 +67,9 @@ namespace Lidgren.Core
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public override bool Equals(object other)
+		public override bool Equals(object? other)
 		{
-			return m_id == ((Id32)other).m_id;
+			return ((other is null) == false) && m_id == ((Id32)other).m_id;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

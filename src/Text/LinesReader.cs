@@ -64,10 +64,10 @@ namespace Lidgren.Core
 			}
 			catch
 			{
-
 				DisposeUtils.Dispose(ref m_rdr);
 				if (m_bufferCreated == true)
 					ArrayPool<char>.Shared.Return(m_buffer);
+				m_bufferCreated = false;
 				m_buffer = null;
 				throw;
 			}

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -178,12 +179,12 @@ namespace Lidgren.Core
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public override bool Equals(object obj)
+		public override bool Equals(object? other)
 		{
-			if (obj is null || !(obj is Ulid))
+			if (other is null || !(other is Ulid))
 				return false;
-			var other = (Ulid)obj;
-			return other.Low == Low && other.High == High;
+			var oulid = (Ulid)other;
+			return oulid.Low == Low && oulid.High == High;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

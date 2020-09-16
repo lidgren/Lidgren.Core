@@ -179,8 +179,8 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public ref T Insert(int index)
 		{
-			ref var destination = ref InsertUninitialized(index);
-			destination = default(T);
+			ref T destination = ref InsertUninitialized(index);
+			destination = default;
 			return ref destination;
 		}
 

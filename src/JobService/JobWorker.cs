@@ -16,6 +16,14 @@ namespace Lidgren.Core
 		private int m_sleepMode;
 		private JobWorkerState m_state;
 
+		[ThreadStatic]
+		private static JobWorker s_workerForThread;
+
+		/// <summary>
+		/// Get JobWorker associated with current thread; if any
+		/// </summary>
+		public static JobWorker WorkerForThread => s_workerForThread;
+
 #if DEBUG
 		public Job CurrentJob;
 		public string Name { get; set; }
@@ -45,6 +53,9 @@ namespace Lidgren.Core
 		private void Run()
 		{
 			var tt = TimingThread.Instance; // init this thread
+
+			// set thread local
+			s_workerForThread = this;
 
 			for (; ; )
 			{

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Runtime.CompilerServices;
 
 namespace Lidgren.Core
@@ -87,7 +88,7 @@ namespace Lidgren.Core
 		/// <summary>
 		/// Without scientific notation
 		/// </summary>
-		public static string DoubleToString(double value, IFormatProvider culture = null)
+		public static string DoubleToString(double value, IFormatProvider? culture = null)
 		{
 			if (culture != null)
 				return value.ToString(c_doubleFixedPoint, culture);

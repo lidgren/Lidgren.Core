@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#nullable enable
+using System;
 using System.Runtime.CompilerServices;
 
 namespace Lidgren.Core
@@ -113,7 +113,7 @@ namespace Lidgren.Core
 			m_buffer[offset + index] = m_buffer[offset + countAfterRemove];
 
 			if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
-				m_buffer[offset + countAfterRemove] = default(T);
+				m_buffer[offset + countAfterRemove] = default;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -200,9 +200,9 @@ namespace Lidgren.Core
 		/// <summary>
 		/// Creates a new FastList with all matching items; or NULL if nothing matches
 		/// </summary>
-		public FastList<T> Find(Predicate<T> match)
+		public FastList<T>? Find(Predicate<T> match)
 		{
-			FastList<T> retval = null;
+			FastList<T>? retval = null;
 
 			int offset = m_offset;
 			int count = m_count;
