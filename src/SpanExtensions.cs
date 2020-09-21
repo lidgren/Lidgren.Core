@@ -76,6 +76,27 @@ namespace Lidgren.Core
 		}
 
 		/// <summary>
+		/// Writes Int16 as two bytes and reduces span to remaining data
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void WriteInt16(ref this Span<byte> span, short value)
+		{
+			BinaryPrimitives.WriteInt16LittleEndian(span, value);
+			span = span.Slice(2);
+		}
+
+		/// <summary>
+		/// Reads Int16 from two bytes and reduces span to remaining data
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static short ReadInt16(ref this ReadOnlySpan<byte> span)
+		{
+			var retval = BinaryPrimitives.ReadInt16LittleEndian(span);
+			span = span.Slice(2);
+			return retval;
+		}
+
+		/// <summary>
 		/// Writes UInt32 as four bytes and reduces span to remaining data
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
