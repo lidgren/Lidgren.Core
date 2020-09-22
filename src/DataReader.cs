@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Buffers;
 using System.IO;
+using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Lidgren.Core
 {
@@ -140,8 +142,64 @@ namespace Lidgren.Core
 		{
 			if (m_remaining.Length < into.Length)
 				Fill();
-			var src =m_remaining.ReadBytes(into.Length);
+			var src = m_remaining.ReadBytes(into.Length);
 			src.CopyTo(into);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public ReadOnlySpan<byte> ReadBytes(int count)
+		{
+			if (m_remaining.Length < count)
+				Fill();
+			return m_remaining.ReadBytes(count);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public Vector2 ReadVector2()
+		{
+			var rem = m_remaining;
+			if (rem.Length < 8)
+				Fill();
+			var data = (ReadOnlySpan<byte>)rem.Slice(0, 8);
+			var retval = data.ReadVector2();
+			m_remaining = rem.Slice(8);
+			return retval;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public Vector3 ReadVector3()
+		{
+			var rem = m_remaining;
+			if (rem.Length < 12)
+				Fill();
+			var data = (ReadOnlySpan<byte>)rem.Slice(0, 12);
+			var retval = data.ReadVector3();
+			m_remaining = rem.Slice(12);
+			return retval;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public Vector4 ReadVector4()
+		{
+			var rem = m_remaining;
+			if (rem.Length < 16)
+				Fill();
+			var data = (ReadOnlySpan<byte>)rem.Slice(0, 16);
+			var retval = data.ReadVector4();
+			m_remaining = rem.Slice(16);
+			return retval;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public Quaternion ReadQuaternion()
+		{
+			var rem = m_remaining;
+			if (rem.Length < 16)
+				Fill();
+			var data = (ReadOnlySpan<byte>)rem.Slice(0, 16);
+			var retval = data.ReadQuaternion();
+			m_remaining = rem.Slice(16);
+			return retval;
 		}
 	}
 }

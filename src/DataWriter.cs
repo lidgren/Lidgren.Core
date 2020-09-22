@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Buffers;
 using System.Buffers.Binary;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -132,9 +133,9 @@ namespace Lidgren.Core
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void WriteByte(byte data)
+		public void WriteByte(byte value)
 		{
-			Allocate(1)[0] = data;
+			Allocate(1)[0] = value;
 		}
 
 		public void WriteString(ReadOnlySpan<char> str)
@@ -170,6 +171,34 @@ namespace Lidgren.Core
 			var src = MemoryMarshal.AsBytes(span);
 			var into = Allocate(src.Length);
 			src.CopyTo(into);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void WriteVector2(Vector2 value)
+		{
+			var into = Allocate(8);
+			into.WriteVector2(value);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void WriteVector3(Vector3 value)
+		{
+			var into = Allocate(12);
+			into.WriteVector3(value);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void WriteVector4(Vector4 value)
+		{
+			var into = Allocate(16);
+			into.WriteVector4(value);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void WriteQuaternion(Quaternion value)
+		{
+			var into = Allocate(16);
+			into.WriteQuaternion(value);
 		}
 	}
 }

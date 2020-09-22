@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Lidgren.Core;
+using System.Numerics;
 
 namespace UnitTests
 {
@@ -83,6 +84,10 @@ namespace UnitTests
 			span.WriteDouble(1.2);
 			span.WriteString("Pararibulitis");
 			span.WriteUInt16(12);
+			span.WriteVector2(new Vector2(1.0f, 2.0f));
+			span.WriteVector3(new Vector3(1.0f, 2.0f, 3.0f));
+			span.WriteVector4(new Vector4(1.0f, 2.0f, 3.0f, 4.0f));
+			span.WriteQuaternion(new Quaternion(1.0f, 2.0f, 3.0f, 4.0f));
 			span.WriteInt32(-120);
 			span.WriteString("Pickle Rick");
 
@@ -93,6 +98,10 @@ namespace UnitTests
 			Assert.AreEqual(1.2, rdr.ReadDouble());
 			Assert.AreEqual("Pararibulitis", rdr.ReadString());
 			Assert.AreEqual(12, rdr.ReadUInt16());
+			Assert.IsTrue(rdr.ReadVector2() == new Vector2(1.0f, 2.0f));
+			Assert.IsTrue(rdr.ReadVector3() == new Vector3(1.0f, 2.0f, 3.0f));
+			Assert.IsTrue(rdr.ReadVector4() == new Vector4(1.0f, 2.0f, 3.0f, 4.0f));
+			Assert.IsTrue(rdr.ReadQuaternion() == new Quaternion(1.0f, 2.0f, 3.0f, 4.0f));
 			Assert.AreEqual(-120, rdr.ReadInt32());
 
 			var tmp = new char[32];

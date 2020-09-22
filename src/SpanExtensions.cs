@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Buffers.Binary;
+using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Lidgren.Core
 {
@@ -317,6 +319,90 @@ namespace Lidgren.Core
 			int byteLen = (int)data[0] | ((int)data[1] << 8);
 			var retval = System.Text.Encoding.UTF8.GetString(data.Slice(2, byteLen));
 			data = data.Slice(2 + byteLen);
+			return retval;
+		}
+
+		/// <summary>
+		/// Writes a Vector2 as eight bytes and reduces span to remaining data
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void WriteVector2(ref this Span<byte> span, Vector2 value)
+		{
+			MemoryMarshal.Write<Vector2>(span, ref value);
+			span = span.Slice(8);
+		}
+
+		/// <summary>
+		/// Reads a Vector2 and reduces span to remaining data
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Vector2 ReadVector2(ref this ReadOnlySpan<byte> data)
+		{
+			var retval = MemoryMarshal.Read<Vector2>(data);
+			data = data.Slice(8);
+			return retval;
+		}
+
+		/// <summary>
+		/// Writes a Vector3 as 12 bytes and reduces span to remaining data
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void WriteVector3(ref this Span<byte> span, Vector3 value)
+		{
+			MemoryMarshal.Write<Vector3>(span, ref value);
+			span = span.Slice(12);
+		}
+
+		/// <summary>
+		/// Reads a Vector3 and reduces span to remaining data
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Vector3 ReadVector3(ref this ReadOnlySpan<byte> data)
+		{
+			var retval = MemoryMarshal.Read<Vector3>(data);
+			data = data.Slice(12);
+			return retval;
+		}
+
+		/// <summary>
+		/// Writes a Vector4 as 16 bytes and reduces span to remaining data
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void WriteVector4(ref this Span<byte> span, Vector4 value)
+		{
+			MemoryMarshal.Write<Vector4>(span, ref value);
+			span = span.Slice(16);
+		}
+
+		/// <summary>
+		/// Reads a Vector4 and reduces span to remaining data
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Vector4 ReadVector4(ref this ReadOnlySpan<byte> data)
+		{
+			var retval = MemoryMarshal.Read<Vector4>(data);
+			data = data.Slice(16);
+			return retval;
+		}
+
+		/// <summary>
+		/// Writes a Quaternion as 16 bytes and reduces span to remaining data
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void WriteQuaternion(ref this Span<byte> span, Quaternion value)
+		{
+			MemoryMarshal.Write<Quaternion>(span, ref value);
+			span = span.Slice(16);
+		}
+
+		/// <summary>
+		/// Reads a Quaternion and reduces span to remaining data
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Quaternion ReadQuaternion(ref this ReadOnlySpan<byte> data)
+		{
+			var retval = MemoryMarshal.Read<Quaternion>(data);
+			data = data.Slice(16);
 			return retval;
 		}
 	}
