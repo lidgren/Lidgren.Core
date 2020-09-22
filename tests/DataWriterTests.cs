@@ -15,9 +15,9 @@ namespace UnitTests
 			{
 				wrt.WriteBool(true);
 				wrt.WriteDouble(1.88);
-				wrt.WriteVariable(12345);
+				wrt.WriteVariableInt32(12345);
 				wrt.WriteString("Pararibulitis");
-				wrt.WriteVariable(0ul);
+				wrt.WriteVariableUInt64(0ul);
 
 				var rdr = wrt.ReadOnlySpan;
 
@@ -57,7 +57,7 @@ namespace UnitTests
 									wrt.WriteSingle((float)PRNG.Next(ref seed, 1, 100));
 									break;
 								case 2:
-									wrt.WriteVariable(PRNG.Next(ref seed, -50, 50));
+									wrt.WriteVariableInt32(PRNG.Next(ref seed, -50, 50));
 									break;
 								case 3:
 									wrt.WriteString(PRNG.NextUInt32(ref seed).ToString());
@@ -98,7 +98,7 @@ namespace UnitTests
 								case 2:
 									{
 										var facit = PRNG.Next(ref seed, -50, 50);
-										Assert.AreEqual(facit, rdr.ReadVariableInt64());
+										Assert.AreEqual(facit, rdr.ReadVariableInt32());
 									}
 									break;
 								case 3:

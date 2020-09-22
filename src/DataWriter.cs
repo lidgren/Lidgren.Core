@@ -46,6 +46,17 @@ namespace Lidgren.Core
 			return m_buffer.AsSpan(len, numBytes);
 		}
 
+		/// <summary>
+		/// Grow capacity to be able to add this many bytes without re-allocating
+		/// </summary>
+		public void EnsureCapacity(int size)
+		{
+			int minTotalSize = m_length + size;
+			if (m_buffer.Length > minTotalSize)
+				return; // we're good
+			Grow(minTotalSize);
+		}
+
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		private void Grow(int minSize)
 		{
@@ -96,18 +107,34 @@ namespace Lidgren.Core
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void WriteVariable(ulong value)
+		public void WriteVariableUInt64(ulong value)
 		{
 			var into = Allocate(9); // worst case
-			into.WriteVariable(value);
+			into.WriteVariableUInt64(value);
 			m_length -= (9 - into.Length); // return unused space
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void WriteVariable(long value)
+		public void WriteVariableInt64(long value)
 		{
 			var into = Allocate(9); // worst case
-			into.WriteVariable(value);
+			into.WriteVariableInt64(value);
+			m_length -= into.Length; // return unused space
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void WriteVariableUInt32(uint value)
+		{
+			var into = Allocate(5); // worst case
+			into.WriteVariableUInt64(value);
+			m_length -= (5 - into.Length); // return unused space
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void WriteVariableInt32(int value)
+		{
+			var into = Allocate(5); // worst case
+			into.WriteVariableInt64(value);
 			m_length -= into.Length; // return unused space
 		}
 
@@ -165,7 +192,7 @@ namespace Lidgren.Core
 		/// </summary>
 		public void WriteArray<T>(ReadOnlySpan<T> span) where T : struct
 		{
-			WriteVariable((uint)span.Length);
+			WriteVariableUInt32((uint)span.Length);
 			if (span.Length == 0)
 				return;
 			var src = MemoryMarshal.AsBytes(span);

@@ -22,7 +22,7 @@ namespace Lidgren.Core
 		/// <summary>
 		/// Writes UInt64 as a 7 bit encoded number (variable length: 1 to 9 bytes) and reduces span to remaining data; returns number of bytes written
 		/// </summary>
-		public static int WriteVariable(ref this Span<byte> span, ulong value)
+		public static int WriteVariableUInt64(ref this Span<byte> span, ulong value)
 		{
 			if (value < 0x80)
 			{
@@ -113,15 +113,15 @@ namespace Lidgren.Core
 		/// Writes Int64 as a 7 bit encoded number (variable length: 1 to 9 bytes) and reduces span to remaining data
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int WriteVariable(ref this Span<byte> span, long value)
+		public static int WriteVariableInt64(ref this Span<byte> span, long value)
 		{
 			// zigzag encode
 			var uval = (ulong)((value << 1) ^ (value >> 63));
-			return WriteVariable(ref span, uval);
+			return WriteVariableUInt64(ref span, uval);
 		}
 
 		/// <summary>
-		/// Reads UInt64 from eight bytes and reduces span to remaining data
+		/// Reads UInt64 from up to nine bytes and reduces span to remaining data
 		/// </summary>
 		public static ulong ReadVariableUInt64(ref this ReadOnlySpan<byte> data)
 		{
@@ -197,7 +197,7 @@ namespace Lidgren.Core
 		private const long InvInt64Msb = ~(((long)1) << 63);
 
 		/// <summary>
-		/// Reads UInt64 from eight bytes and reduces span to remaining data
+		/// Reads Int64 from up to nine bytes and reduces span to remaining data
 		/// </summary>
 		public static long ReadVariableInt64(ref this ReadOnlySpan<byte> data)
 		{
@@ -205,6 +205,18 @@ namespace Lidgren.Core
 
 			// zigzag decode
 			return (-(value & 0x01L)) ^ ((value >> 1) & InvInt64Msb);
+		}
+
+		/// <summary>
+		/// Reads Int32 from up to five bytes and reduces span to remaining data
+		/// </summary>
+		public static int ReadVariableInt32(ref this ReadOnlySpan<byte> data)
+		{
+			long value = (long)ReadVariableUInt64(ref data);
+
+			// zigzag decode
+			var signed = (-(value & 0x01L)) ^ ((value >> 1) & InvInt64Msb);
+			return (int)signed;
 		}
 	}
 }

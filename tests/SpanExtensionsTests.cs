@@ -23,7 +23,7 @@ namespace UnitTests
 			{
 				var work = arr.AsSpan();
 				for (int i = 0; i < numbers.Length; i++)
-					work.WriteVariable(numbers[i]);
+					work.WriteVariableUInt64(numbers[i]);
 
 				int resultLength = arr.Length - work.Length;
 
@@ -60,7 +60,7 @@ namespace UnitTests
 
 				var work = arr.AsSpan();
 				for (int i = 0; i < signed.Length; i++)
-					work.WriteVariable(signed[i]);
+					work.WriteVariableInt64(signed[i]);
 
 				int resultLength = arr.Length - work.Length;
 

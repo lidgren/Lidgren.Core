@@ -155,6 +155,30 @@ namespace Lidgren.Core
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public uint ReadVariableUInt32()
+		{
+			if (m_remaining.Length < 5)
+				Fill();
+			return (uint)m_remaining.ReadVariableUInt64();
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public ulong ReadVariableUInt64()
+		{
+			if (m_remaining.Length < 9)
+				Fill();
+			return m_remaining.ReadVariableUInt64();
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public long ReadVariableInt64()
+		{
+			if (m_remaining.Length < 9)
+				Fill();
+			return m_remaining.ReadVariableInt64();
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public Vector2 ReadVector2()
 		{
 			var rem = m_remaining;
