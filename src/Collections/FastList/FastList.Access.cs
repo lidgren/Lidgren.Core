@@ -26,7 +26,7 @@ namespace Lidgren.Core
 		public T[] ToArray()
 		{
 			if (m_count == 0)
-				return s_emptyArray;
+				return System.Array.Empty<T>();
 			return ReadOnlySpan.ToArray();
 		}
 

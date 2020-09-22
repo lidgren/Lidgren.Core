@@ -12,9 +12,7 @@ namespace Lidgren.Core
 	[DebuggerDisplay("AddList<{typeof(T).Name}> {Count}/{Capacity}")]
 	public class AddList<T>
 	{
-		private static readonly T[] s_emptyArray = new T[] { };
-
-		private T[] m_items = s_emptyArray;
+		private T[] m_items = System.Array.Empty<T>();
 
 		private int m_count;
 		public int Count => m_count;
