@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Lidgren.Core
 {
@@ -13,6 +12,10 @@ namespace Lidgren.Core
 
 	/// <summary>
 	/// Allocation free alternative to string.Split() working on Span<char> (actually span of anything)
+	/// Usage:
+	/// var tokenizer = "this is a string".Tokenize();
+	/// while(tokenizer.GetNext(' ', out var span)
+	///    HandleToken(span);
 	/// </summary>
 	public ref struct Tokenizer<T> where T : struct, IEquatable<T>
 	{
