@@ -27,21 +27,28 @@ namespace Lidgren.Core
 			// read 4k at a time
 			const int bufSize = 1024 * 4;
 			var backing = ArrayPool<byte>.Shared.Rent(bufSize);
-			var buffer = backing.AsSpan(0, bufSize);
-			var hasher = Hasher.Create();
-			bytesHashedCount = 0;
-			for (; ; )
+			try
 			{
-				int numBytes = stream.Read(buffer);
-				if (numBytes > 0)
+				var buffer = backing.AsSpan(0, bufSize);
+				var hasher = Hasher.Create();
+				bytesHashedCount = 0;
+				for (; ; )
 				{
-					bytesHashedCount += numBytes;
-					hasher.Add(buffer.Slice(0, numBytes));
+					int numBytes = stream.Read(buffer);
+					if (numBytes > 0)
+					{
+						bytesHashedCount += numBytes;
+						hasher.Add(buffer.Slice(0, numBytes));
+					}
+					else
+						break;
 				}
-				else
-					break;
+				return hasher.Finalize64();
 			}
-			return hasher.Finalize64();
+			finally
+			{
+				ArrayPool<byte>.Shared.Return(backing);
+			}
 		}
 	}
 }
