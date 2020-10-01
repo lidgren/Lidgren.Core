@@ -4,6 +4,7 @@ Various core functions useful to almost every project.
 Goals are:
 * No dependencies
 * Best possible performance
+* No reflection
 * Heap allocation free whenever possible
 * Simple and self explanatory
 
