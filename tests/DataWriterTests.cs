@@ -16,6 +16,7 @@ namespace UnitTests
 				wrt.WriteBool(true);
 				wrt.WriteDouble(1.88);
 				wrt.WriteVariableInt32(12345);
+				wrt.WriteLengthPrefixedArray<ushort>(new ushort[] { 12, 1, 65000 });
 				wrt.WriteString("Pararibulitis");
 				wrt.WriteVariableUInt64(0ul);
 
@@ -24,6 +25,11 @@ namespace UnitTests
 				Assert.IsTrue(rdr.ReadBool());
 				Assert.AreEqual(1.88, rdr.ReadDouble());
 				Assert.AreEqual(12345, rdr.ReadVariableInt64());
+				var arr = rdr.ReadLengthPrefixedArray<ushort>();
+				Assert.AreEqual(3, arr.Length);
+				Assert.AreEqual(12, arr[0]);
+				Assert.AreEqual(1, arr[1]);
+				Assert.AreEqual(65000, arr[2]);
 				Assert.AreEqual("Pararibulitis", rdr.ReadString());
 				Assert.AreEqual(0ul, rdr.ReadVariableUInt64());
 			}

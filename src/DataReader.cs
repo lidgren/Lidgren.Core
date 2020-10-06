@@ -32,10 +32,10 @@ namespace Lidgren.Core
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		private void Fill()
+		private ReadOnlySpan<byte> Fill()
 		{
 			if (m_stream == null)
-				return; // nothing to fill from; created from finite data size
+				return m_remaining; // nothing to fill from; created from finite data size
 
 			int remLen = m_remaining.Length;
 			m_remaining.CopyTo(m_buffer);
@@ -45,6 +45,7 @@ namespace Lidgren.Core
 				throw new Exception("No more bytes to read");
 
 			m_remaining = m_buffer.Slice(0, remLen + bytesRead);
+			return m_remaining;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -193,7 +194,7 @@ namespace Lidgren.Core
 		{
 			var rem = m_remaining;
 			if (rem.Length < 8)
-				Fill();
+				rem = Fill();
 			var data = (ReadOnlySpan<byte>)rem.Slice(0, 8);
 			var retval = data.ReadVector2();
 			m_remaining = rem.Slice(8);
@@ -205,7 +206,7 @@ namespace Lidgren.Core
 		{
 			var rem = m_remaining;
 			if (rem.Length < 12)
-				Fill();
+				rem = Fill();
 			var data = (ReadOnlySpan<byte>)rem.Slice(0, 12);
 			var retval = data.ReadVector3();
 			m_remaining = rem.Slice(12);
@@ -229,10 +230,30 @@ namespace Lidgren.Core
 		{
 			var rem = m_remaining;
 			if (rem.Length < 16)
-				Fill();
+				rem = Fill();
 			var data = (ReadOnlySpan<byte>)rem.Slice(0, 16);
 			var retval = data.ReadQuaternion();
 			m_remaining = rem.Slice(16);
+			return retval;
+		}
+
+		public TArrItem[] ReadLengthPrefixedArray<TArrItem>() where TArrItem : unmanaged
+		{
+			var itemsCount = (int)ReadVariableUInt32();
+			var itemSize = Unsafe.SizeOf<TArrItem>();
+			var numBytes = itemsCount * itemSize;
+
+			var rem = m_remaining;
+			if (rem.Length < numBytes)
+				rem = Fill();
+
+			var src = MemoryMarshal.Cast<byte, TArrItem>(rem.Slice(0, numBytes));
+			var retval = new TArrItem[itemsCount];
+			src.CopyTo(retval);
+
+			rem = rem.Slice(numBytes);
+			m_remaining = rem;
+
 			return retval;
 		}
 	}

@@ -197,7 +197,7 @@ namespace Lidgren.Core
 		/// <summary>
 		/// Write length prefixed array of T
 		/// </summary>
-		public void WriteArray<T>(ReadOnlySpan<T> span) where T : struct
+		public void WriteLengthPrefixedArray<T>(ReadOnlySpan<T> span) where T : unmanaged
 		{
 			WriteVariableUInt32((uint)span.Length);
 			if (span.Length == 0)
