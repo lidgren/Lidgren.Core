@@ -50,6 +50,10 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		public static void Throw(string? message = null, Exception? inner = null)
 		{
+#if DEBUG
+			if (Debugger.IsAttached)
+				Debugger.Break();
+#endif
 			throw new CoreException(message, inner);
 		}
 
