@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Lidgren.Core;
+using System.Numerics;
 
 namespace UnitTests
 {
@@ -17,6 +18,7 @@ namespace UnitTests
 				wrt.WriteDouble(1.88);
 				wrt.WriteVariableInt32(12345);
 				wrt.WriteLengthPrefixedArray<ushort>(new ushort[] { 12, 1, 65000 });
+				wrt.Write<Vector3>(new Vector3(9, 91, 81));
 				wrt.WriteString("Pararibulitis");
 				wrt.WriteVariableUInt64(0ul);
 
@@ -25,11 +27,15 @@ namespace UnitTests
 				Assert.IsTrue(rdr.ReadBool());
 				Assert.AreEqual(1.88, rdr.ReadDouble());
 				Assert.AreEqual(12345, rdr.ReadVariableInt64());
+
 				var arr = rdr.ReadLengthPrefixedArray<ushort>();
 				Assert.AreEqual(3, arr.Length);
 				Assert.AreEqual(12, arr[0]);
 				Assert.AreEqual(1, arr[1]);
 				Assert.AreEqual(65000, arr[2]);
+
+				var v = rdr.Read<Vector3>();
+				Assert.AreEqual(new Vector3(9, 91, 81), v);
 				Assert.AreEqual("Pararibulitis", rdr.ReadString());
 				Assert.AreEqual(0ul, rdr.ReadVariableUInt64());
 			}

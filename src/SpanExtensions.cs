@@ -323,87 +323,52 @@ namespace Lidgren.Core
 		}
 
 		/// <summary>
-		/// Writes a Vector2 as eight bytes and reduces span to remaining data
+		/// Write an unmanaged struct (ie containing no reference types) and reduces span to remaining data
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void WriteVector2(ref this Span<byte> span, Vector2 value)
+		public static void Write<T>(ref this Span<byte> span, T value) where T : unmanaged
 		{
-			MemoryMarshal.Write<Vector2>(span, ref value);
-			span = span.Slice(8);
+			MemoryMarshal.Write<T>(span, ref value);
+			span = span.Slice(Unsafe.SizeOf<T>());
 		}
 
 		/// <summary>
-		/// Reads a Vector2 and reduces span to remaining data
+		/// Reads an unmanaged struct (ie containing no reference types) and reduces span to remaining data
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Vector2 ReadVector2(ref this ReadOnlySpan<byte> data)
+		public static T Read<T>(ref this ReadOnlySpan<byte> data) where T : unmanaged
 		{
-			var retval = MemoryMarshal.Read<Vector2>(data);
-			data = data.Slice(8);
+			var retval = MemoryMarshal.Read<T>(data);
+			data = data.Slice(Unsafe.SizeOf<T>());
 			return retval;
 		}
 
-		/// <summary>
-		/// Writes a Vector3 as 12 bytes and reduces span to remaining data
-		/// </summary>
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void WriteVector3(ref this Span<byte> span, Vector3 value)
+		public static void WriteLengthPrefixedArray<TArrItem>(ref this Span<byte> span, ReadOnlySpan<TArrItem> items) where TArrItem : unmanaged
 		{
-			MemoryMarshal.Write<Vector3>(span, ref value);
-			span = span.Slice(12);
+			span.WriteVariableUInt32((uint)items.Length);
+			if (items.Length == 0)
+				return;
+			var src = MemoryMarshal.AsBytes(items);
+			src.CopyTo(span);
+			span = span.Slice(src.Length);
 		}
 
 		/// <summary>
-		/// Reads a Vector3 and reduces span to remaining data
+		/// Reads a length prefixed array written by WriteLengthPrefixedArray()
 		/// </summary>
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Vector3 ReadVector3(ref this ReadOnlySpan<byte> data)
+		public static TArrItem[] ReadLengthPrefixedArray<TArrItem>(ref this ReadOnlySpan<byte> data) where TArrItem : unmanaged
 		{
-			var retval = MemoryMarshal.Read<Vector3>(data);
-			data = data.Slice(12);
+			var itemsCount = (int)data.ReadVariableUInt32();
+			var itemSize = Unsafe.SizeOf<TArrItem>();
+			var numBytes = itemsCount * itemSize;
+
+			var src = MemoryMarshal.Cast<byte, TArrItem>(data.Slice(0, numBytes));
+			var retval = new TArrItem[itemsCount];
+			src.CopyTo(retval);
+
+			data = data.Slice(numBytes);
 			return retval;
 		}
 
-		/// <summary>
-		/// Writes a Vector4 as 16 bytes and reduces span to remaining data
-		/// </summary>
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void WriteVector4(ref this Span<byte> span, Vector4 value)
-		{
-			MemoryMarshal.Write<Vector4>(span, ref value);
-			span = span.Slice(16);
-		}
-
-		/// <summary>
-		/// Reads a Vector4 and reduces span to remaining data
-		/// </summary>
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Vector4 ReadVector4(ref this ReadOnlySpan<byte> data)
-		{
-			var retval = MemoryMarshal.Read<Vector4>(data);
-			data = data.Slice(16);
-			return retval;
-		}
-
-		/// <summary>
-		/// Writes a Quaternion as 16 bytes and reduces span to remaining data
-		/// </summary>
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void WriteQuaternion(ref this Span<byte> span, Quaternion value)
-		{
-			MemoryMarshal.Write<Quaternion>(span, ref value);
-			span = span.Slice(16);
-		}
-
-		/// <summary>
-		/// Reads a Quaternion and reduces span to remaining data
-		/// </summary>
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Quaternion ReadQuaternion(ref this ReadOnlySpan<byte> data)
-		{
-			var retval = MemoryMarshal.Read<Quaternion>(data);
-			data = data.Slice(16);
-			return retval;
-		}
 	}
 }

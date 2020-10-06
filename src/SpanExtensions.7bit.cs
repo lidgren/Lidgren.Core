@@ -110,6 +110,16 @@ namespace Lidgren.Core
 		}
 
 		/// <summary>
+		/// Writes UInt32 as a 7 bit encoded number (variable length: 1 to 5 bytes) and reduces span to remaining data
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static int WriteVariableUInt32(ref this Span<byte> span, uint value)
+		{
+			// TODO: write specialized if performance can be gained
+			return WriteVariableUInt64(ref span, value);
+		}
+
+		/// <summary>
 		/// Writes Int64 as a 7 bit encoded number (variable length: 1 to 9 bytes) and reduces span to remaining data
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -205,6 +215,15 @@ namespace Lidgren.Core
 
 			// zigzag decode
 			return (-(value & 0x01L)) ^ ((value >> 1) & InvInt64Msb);
+		}
+
+		/// <summary>
+		/// Reads UInt32 from up to five bytes and reduces span to remaining data
+		/// </summary>
+		public static uint ReadVariableUInt32(ref this ReadOnlySpan<byte> data)
+		{
+			// TODO: make explicit ReadVariableUInt32()
+			return (uint)ReadVariableUInt64(ref data);
 		}
 
 		/// <summary>

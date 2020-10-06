@@ -207,32 +207,13 @@ namespace Lidgren.Core
 			src.CopyTo(into);
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void WriteVector2(Vector2 value)
+		/// <summary>
+		/// Write an unmanaged struct (ie containing no reference types)
+		/// </summary>
+		public void Write<T>(T value) where T : unmanaged
 		{
-			var into = Allocate(8);
-			into.WriteVector2(value);
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void WriteVector3(Vector3 value)
-		{
-			var into = Allocate(12);
-			into.WriteVector3(value);
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void WriteVector4(Vector4 value)
-		{
-			var into = Allocate(16);
-			into.WriteVector4(value);
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void WriteQuaternion(Quaternion value)
-		{
-			var into = Allocate(16);
-			into.WriteQuaternion(value);
+			var into = Allocate(Unsafe.SizeOf<T>());
+			MemoryMarshal.Write<T>(into, ref value);
 		}
 	}
 }

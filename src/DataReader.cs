@@ -189,51 +189,17 @@ namespace Lidgren.Core
 			return m_remaining.ReadVariableInt64();
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public Vector2 ReadVector2()
+		/// <summary>
+		/// Reads an unmanaged struct (ie containing no reference types)
+		/// </summary>
+		public T Read<T>() where T : unmanaged
 		{
+			int size = Unsafe.SizeOf<T>();
 			var rem = m_remaining;
-			if (rem.Length < 8)
+			if (rem.Length < size)
 				rem = Fill();
-			var data = (ReadOnlySpan<byte>)rem.Slice(0, 8);
-			var retval = data.ReadVector2();
-			m_remaining = rem.Slice(8);
-			return retval;
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public Vector3 ReadVector3()
-		{
-			var rem = m_remaining;
-			if (rem.Length < 12)
-				rem = Fill();
-			var data = (ReadOnlySpan<byte>)rem.Slice(0, 12);
-			var retval = data.ReadVector3();
-			m_remaining = rem.Slice(12);
-			return retval;
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public Vector4 ReadVector4()
-		{
-			var rem = m_remaining;
-			if (rem.Length < 16)
-				Fill();
-			var data = (ReadOnlySpan<byte>)rem.Slice(0, 16);
-			var retval = data.ReadVector4();
-			m_remaining = rem.Slice(16);
-			return retval;
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public Quaternion ReadQuaternion()
-		{
-			var rem = m_remaining;
-			if (rem.Length < 16)
-				rem = Fill();
-			var data = (ReadOnlySpan<byte>)rem.Slice(0, 16);
-			var retval = data.ReadQuaternion();
-			m_remaining = rem.Slice(16);
+			var retval = MemoryMarshal.Read<T>(rem);
+			m_remaining = rem.Slice(size);
 			return retval;
 		}
 

@@ -84,11 +84,11 @@ namespace UnitTests
 			span.WriteDouble(1.2);
 			span.WriteString("Pararibulitis");
 			span.WriteUInt16(12);
-			span.WriteVector2(new Vector2(1.0f, 2.0f));
+			span.Write<Vector2>(new Vector2(1.0f, 2.0f));
 			span.WriteLengthPrefixedArray<byte>(new byte[] { 43, 42, 41 });
-			span.WriteVector3(new Vector3(1.0f, 2.0f, 3.0f));
-			span.WriteVector4(new Vector4(1.0f, 2.0f, 3.0f, 4.0f));
-			span.WriteQuaternion(new Quaternion(1.0f, 2.0f, 3.0f, 4.0f));
+			span.Write<Vector3>(new Vector3(1.0f, 2.0f, 3.0f));
+			span.Write<Vector4>(new Vector4(1.0f, 2.0f, 3.0f, 4.0f));
+			span.Write<Quaternion>(new Quaternion(1.0f, 2.0f, 3.0f, 4.0f));
 			span.WriteInt32(-120);
 			span.WriteString("Pickle Rick");
 
@@ -99,15 +99,15 @@ namespace UnitTests
 			Assert.AreEqual(1.2, rdr.ReadDouble());
 			Assert.AreEqual("Pararibulitis", rdr.ReadString());
 			Assert.AreEqual(12, rdr.ReadUInt16());
-			Assert.IsTrue(rdr.ReadVector2() == new Vector2(1.0f, 2.0f));
+			Assert.IsTrue(rdr.Read<Vector2>() == new Vector2(1.0f, 2.0f));
 			var barr = rdr.ReadLengthPrefixedArray<byte>();
 			Assert.AreEqual(3, barr.Length);
 			Assert.AreEqual(43, barr[0]);
 			Assert.AreEqual(42, barr[1]);
 			Assert.AreEqual(41, barr[2]);
-			Assert.IsTrue(rdr.ReadVector3() == new Vector3(1.0f, 2.0f, 3.0f));
-			Assert.IsTrue(rdr.ReadVector4() == new Vector4(1.0f, 2.0f, 3.0f, 4.0f));
-			Assert.IsTrue(rdr.ReadQuaternion() == new Quaternion(1.0f, 2.0f, 3.0f, 4.0f));
+			Assert.IsTrue(rdr.Read<Vector3>() == new Vector3(1.0f, 2.0f, 3.0f));
+			Assert.IsTrue(rdr.Read<Vector4>() == new Vector4(1.0f, 2.0f, 3.0f, 4.0f));
+			Assert.IsTrue(rdr.Read<Quaternion>() == new Quaternion(1.0f, 2.0f, 3.0f, 4.0f));
 			Assert.AreEqual(-120, rdr.ReadInt32());
 
 			var tmp = new char[32];
