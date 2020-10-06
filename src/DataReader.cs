@@ -21,12 +21,22 @@ namespace Lidgren.Core
 		{
 			m_stream = stream;
 			m_buffer = buffer;
-			m_remaining = buffer;
+			m_remaining = default;
+		}
+
+		public DataReader(ReadOnlySpan<byte> data)
+		{
+			m_stream = null;
+			m_buffer = null;
+			m_remaining = data;
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		private void Fill()
 		{
+			if (m_stream == null)
+				return; // nothing to fill from; created from finite data size
+
 			int remLen = m_remaining.Length;
 			m_remaining.CopyTo(m_buffer);
 

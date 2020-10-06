@@ -111,7 +111,7 @@ namespace Lidgren.Core
 		{
 			var into = Allocate(9); // worst case
 			into.WriteVariableUInt64(value);
-			m_length -= (9 - into.Length); // return unused space
+			m_length -= into.Length; // return unused space
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -127,7 +127,7 @@ namespace Lidgren.Core
 		{
 			var into = Allocate(5); // worst case
 			into.WriteVariableUInt64(value);
-			m_length -= (5 - into.Length); // return unused space
+			m_length -= into.Length; // return unused space
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -140,6 +140,13 @@ namespace Lidgren.Core
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void WriteSingle(float value)
+		{
+			var into = Allocate(4);
+			into.WriteSingle(value);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void WriteFloat(float value)
 		{
 			var into = Allocate(4);
 			into.WriteSingle(value);
