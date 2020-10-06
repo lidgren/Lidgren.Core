@@ -8,14 +8,14 @@ namespace Lidgren.Core
 	public static class TimingService
 	{
 		private static FastList<TimingThread> s_threads = new FastList<TimingThread>(16);
-		private static FastList<Action<TimingThread, Memory<TimingEntry>>> s_listeners = new FastList<Action<TimingThread, Memory<TimingEntry>>>(2);
+		private static FastList<Action<TimingThread, TimingEntry[], int>> s_listeners = new FastList<Action<TimingThread, TimingEntry[], int>>(2);
 
 		public static bool IsEnabled { get; set; }
 
 		/// <summary>
 		/// Add a listener that will be called on the thread that is flushing
 		/// </summary>
-		public static void AddListener(Action<TimingThread, Memory<TimingEntry>> listener)
+		public static void AddListener(Action<TimingThread, TimingEntry[], int> listener)
 		{
 			lock (s_listeners)
 				s_listeners.Add(listener);
@@ -47,7 +47,7 @@ namespace Lidgren.Core
 
 			if (shuttingDown)
 			{
-				Thread.Sleep(17); // give other threads some time to flush voluntarily
+				Thread.Sleep(34); // give other threads some time to flush voluntarily
 
 				// forced flush; let's squeeze out the last remaining scopes in the threads
 				foreach (var thread in s_threads.ReadOnlySpan)
@@ -62,12 +62,12 @@ namespace Lidgren.Core
 		}
 
 		// called by TimingThread
-		internal static void Flush(TimingThread thread, Memory<TimingEntry> span)
+		internal static void Flush(TimingThread thread, TimingEntry[] items, int count)
 		{
 			foreach (var listener in s_listeners.ReadOnlySpan)
 			{
 				lock (listener)
-					listener(thread, span);
+					listener(thread, items, count);
 			}
 		}
 	}

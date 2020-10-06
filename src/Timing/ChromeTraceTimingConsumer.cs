@@ -29,9 +29,9 @@ namespace Lidgren.Core
 		private const string k_part2 = ",\"dur\":";
 		private const string k_part3 = ",\"pid\":0,\"tid\":";
 
-		private void Flush(TimingThread thread, Memory<TimingEntry> entries)
+		private void Flush(TimingThread thread, TimingEntry[] entries, int count)
 		{
-			var span = entries.Span;
+			var span = entries.AsSpan(0, count);
 
 			lock (m_seen)
 			{

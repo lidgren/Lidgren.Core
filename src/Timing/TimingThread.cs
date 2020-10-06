@@ -22,7 +22,7 @@ namespace Lidgren.Core
 
 		private string? m_threadName;
 		private int m_threadIndex;
-		private readonly TimingEntry[] m_completed = new TimingEntry[k_maxCompletedEntries];
+		private readonly TimingEntry[] m_completed;
 		private int m_completedCount;
 		private bool m_triggerFlushOnce;
 		private Thread m_thread;
@@ -109,7 +109,7 @@ namespace Lidgren.Core
 				m_triggerFlushOnce = false;
 				if (m_completedCount > 0)
 				{
-					TimingService.Flush(this, m_completed.AsMemory(0, m_completedCount));
+					TimingService.Flush(this, m_completed, m_completedCount);
 					m_completedCount = 0;
 				}
 			}
