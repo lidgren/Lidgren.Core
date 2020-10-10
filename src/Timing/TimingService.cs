@@ -88,6 +88,9 @@ namespace Lidgren.Core
 			Started = Stopwatch.GetTimestamp();
 		}
 
+		/// <summary>
+		/// No need/possibility to implement IDisposable; but compiler magic will call this anyway!
+		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Dispose()
 		{

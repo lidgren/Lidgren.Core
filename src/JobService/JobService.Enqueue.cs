@@ -23,6 +23,7 @@ namespace Lidgren.Core
 				job.Completion = completion;
 				s_instancesCount++;
 				CoreException.Assert(s_instancesCount <= s_instances.Length);
+				JobWait.Set();
 			}
 		}
 

@@ -13,8 +13,8 @@ namespace Lidgren.Core
 	internal class JobWorker
 	{
 		private Thread m_thread;
-		private int m_sleepMode;
 		private JobWorkerState m_state;
+		private string m_name;
 
 		[ThreadStatic]
 		private static JobWorker s_workerForThread;
@@ -26,8 +26,9 @@ namespace Lidgren.Core
 
 #if DEBUG
 		public Job CurrentJob;
-		public string Name { get; set; }
 #endif
+		public string Name => m_name;
+
 		internal void SetState(JobWorkerState state)
 		{
 			if (m_state == JobWorkerState.Shutdown)
@@ -35,18 +36,12 @@ namespace Lidgren.Core
 			m_state = state;
 		}
 
-		public JobWorker(int index, int sleepMode)
+		public JobWorker(int index)
 		{
 			m_thread = new Thread(new ThreadStart(Run));
 			m_thread.IsBackground = true;
-
-			var name = "JobWorker#" + index.ToString();
-#if DEBUG
-			Name = name;
-#endif
-			m_thread.Name = name;
-			m_sleepMode = sleepMode;
-
+			m_name = "JobWorker#" + index.ToString();
+			m_thread.Name = m_name;
 			m_thread.Start();
 		}
 
@@ -72,20 +67,8 @@ namespace Lidgren.Core
 				if (jobDone)
 					continue;
 
-				switch (m_sleepMode)
-				{
-					case 0:
-						// TODO: spin first, then sleep 0
-						Thread.Sleep(0);
-						break;
-					case 1:
-						Thread.Sleep(0);
-						break;
-					case 2:
-					default:
-						Thread.Sleep(1);
-						break;
-				}
+				// wait for a job to be queued (may give false positives but...)
+				JobService.JobWait.WaitOne();
 			}
 		}
 	}

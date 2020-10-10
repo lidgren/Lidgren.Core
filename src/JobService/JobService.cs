@@ -12,6 +12,8 @@ namespace Lidgren.Core
 
 		public static bool IsInitialized => s_workers != null;
 
+		internal static AutoResetEvent JobWait = new AutoResetEvent(true);
+
 		public static void Initialize()
 		{
 			using var _ = new Timing("jobsvcinit");
@@ -22,54 +24,13 @@ namespace Lidgren.Core
 					return; // already initialized
 
 				// set up a good amount of workers; but leave some room for main thread and misc other threads
-				JobWorker[] workers = null;
-				var hw = Environment.ProcessorCount;
-				switch (hw)
-				{
-					case 0:
-						workers = new JobWorker[] { }; // for nullability 
-						CoreException.Throw("Failed to determine number of HW threads");
-						break;
-					case 1:
-						workers = new JobWorker[] { new JobWorker(0, 1) };
-						break;
-					case 2:
-					case 3: // ?!
-						workers = new JobWorker[] { new JobWorker(0, 1), new JobWorker(1, 1) };
-						break;
-					case 4:
-					case 5: // ?!
-						workers = new JobWorker[] { new JobWorker(0, 0), new JobWorker(1, 1), new JobWorker(2, 1) };
-						break;
-					case 6:
-					case 7:
-						workers = new JobWorker[] { new JobWorker(0, 0), new JobWorker(1, 1), new JobWorker(2, 1), new JobWorker(3, 1), new JobWorker(4, 2) };
-						break;
-					case 8:
-						workers = new JobWorker[]
-						{
-						new JobWorker(0, 0),
-						new JobWorker(1, 1),
-						new JobWorker(2, 1),
-						new JobWorker(3, 1),
-						new JobWorker(4, 1),
-						new JobWorker(5, 2),
-						new JobWorker(6, 2)
-						};
-						break;
-					default:
-						var cnt = hw - (1 + (hw / 8));
-						workers = new JobWorker[cnt];
-						workers[0] = new JobWorker(0, 0);
-						workers[1] = new JobWorker(1, 0);
-						workers[cnt - 1] = new JobWorker(cnt - 1, 2);
-						workers[cnt - 2] = new JobWorker(cnt - 2, 2);
-						for (int i = 2; i < cnt - 2; i++)
-							workers[i] = new JobWorker(i, 1);
-						break;
-				}
+				var hwThreads = Environment.ProcessorCount;
 
-				s_workers = workers;
+				// minimum 2 job workers; some may assume at least some concurrency
+				int numWorkers = (hwThreads <= 2) ? 2 : hwThreads - (1 + (hwThreads / 8));
+				s_workers = new JobWorker[numWorkers];
+				for (int i = 0; i < numWorkers; i++)
+					s_workers[i] = new JobWorker(i);
 			}
 		}
 
@@ -124,7 +85,11 @@ namespace Lidgren.Core
 				job = s_instances[nxt];
 				nxt = (nxt + 1) & k_instancesMask;
 				s_nextInstance = nxt;
-				s_instancesCount = cnt - 1;
+
+				var remainingInstances = cnt - 1;
+				s_instancesCount = remainingInstances;
+				if (remainingInstances > 0)
+					JobWait.Set();
 			}
 			return true;
 		}
