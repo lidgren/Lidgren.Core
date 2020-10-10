@@ -211,6 +211,15 @@ namespace Lidgren.Core
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static byte XorFold32To8(uint value)
+		{
+			unchecked
+			{
+				return (byte)(value ^ (value >> 8) ^ (value >> 16) ^ (value >> 24));
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ushort XorFold16To8(ushort value)
 		{
 			unchecked
