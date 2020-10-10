@@ -1,5 +1,5 @@
 # Lidgren.Core
-Various core functions useful to almost every project.
+Various core functions useful to almost every project; but with an emphasis towards game development.
 
 Goals are:
 * No dependencies
