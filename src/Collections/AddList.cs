@@ -22,10 +22,13 @@ namespace Lidgren.Core
 
 		// cold path, never inline
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		private T[] Grow()
+		private T[] Grow(int minAdd)
 		{
 			var oldLen = m_items.Length;
 			var newLength = oldLen == 0 ? 4 : oldLen * 2;
+			var min = m_count + minAdd;
+			if (newLength < min)
+				newLength = min;
 			var newBuffer = new T[newLength];
 
 			var old = this.ReadOnlySpan;
@@ -57,10 +60,34 @@ namespace Lidgren.Core
 			var buffer = m_items;
 
 			if (count == buffer.Length)
-				buffer = Grow();
+				buffer = Grow(1);
 
 			m_count = count + 1;
 			return ref buffer[count];
+		}
+
+		public Span<T> AddRange(int numItems)
+		{
+			int rem = m_items.Length - m_count;
+			if (rem < numItems)
+				Grow(numItems);
+			var span = m_items.AsSpan(m_count, numItems);
+			m_count += numItems;
+			return span;
+		}
+
+		public void AddRange(ReadOnlySpan<T> items)
+		{
+			var into = AddRange(items.Length);
+			items.CopyTo(into);
+		}
+
+		public T[] ToArray()
+		{
+			var span = ReadOnlySpan;
+			var retval = new T[span.Length];
+			span.CopyTo(retval);
+			return retval;
 		}
 	}
 }
