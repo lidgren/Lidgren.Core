@@ -45,12 +45,16 @@ namespace Lidgren.Core
 			m_thread.Start();
 		}
 
+		public override string ToString() => m_name;
+
 		private void Run()
 		{
 			var tt = TimingThread.Instance; // init this thread
 
 			// set thread local
 			s_workerForThread = this;
+
+			int numTotalWorkers = JobService.WorkersCount;
 
 			for (; ; )
 			{
@@ -68,7 +72,10 @@ namespace Lidgren.Core
 					continue;
 
 				// wait for a job to be queued (may give false positives but...)
-				JobService.JobWait.WaitOne();
+				int numIdle = Interlocked.Increment(ref JobService.m_idleWorkers);
+				if (numIdle < numTotalWorkers) // at least one worker should always be awake
+					JobService.JobWait.WaitOne();
+				numIdle = Interlocked.Decrement(ref JobService.m_idleWorkers);
 			}
 		}
 	}

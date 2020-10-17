@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 
 namespace Lidgren.Core
@@ -13,6 +14,7 @@ namespace Lidgren.Core
 		public static bool IsInitialized => s_workers != null;
 
 		internal static AutoResetEvent JobWait = new AutoResetEvent(true);
+		internal static int m_idleWorkers;
 
 		public static void Initialize()
 		{
@@ -38,9 +40,6 @@ namespace Lidgren.Core
 		// return true if a job was found and executed
 		internal static bool ExecuteOneJob(JobWorker worker, JobCompletion requiredCompletion = null)
 		{
-			if (s_instancesCount <= 0)
-				return false;
-
 			Job job;
 
 			if (requiredCompletion != null)
@@ -50,8 +49,11 @@ namespace Lidgren.Core
 			}
 			else
 			{
-				if (PopAnyJob(out job) == false)
-					return false;
+				if (s_instancesCount < 0 || PopAnyJob(out job) == false)
+				{
+					if (PopDelayed(Stopwatch.GetTimestamp(), out job) == false)
+						return false;
+				}
 			}
 
 			// do job
@@ -90,8 +92,8 @@ namespace Lidgren.Core
 				s_instancesCount = remainingInstances;
 				if (remainingInstances > 0)
 					JobWait.Set();
+				return true;
 			}
-			return true;
 		}
 
 		/// <summary>
@@ -140,10 +142,11 @@ namespace Lidgren.Core
 			var cmp = job.Completion;
 			if (cmp != null)
 			{
+				int cac = cmp.ContinuationAtCount;
 				var numCompleted = Interlocked.Increment(ref cmp.Completed);
-				if (cmp.Continuation != null)
+				if (numCompleted == cac)
 				{
-					if (numCompleted == cmp.ContinuationAtCount)
+					if (cmp.Continuation != null)
 					{
 						using (new Timing(cmp.ContinuationName == null ? "continuation" : cmp.ContinuationName))
 						{

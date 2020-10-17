@@ -31,7 +31,11 @@ namespace Lidgren.Core
 			{
 				if (s_free.TryPop(out var retval))
 				{
-					CoreException.Assert(retval.Completed == 0);
+					retval.Completed = 0;
+					retval.ContinuationAtCount = 0;
+					retval.Continuation = null;
+					retval.ContinuationName = null;
+					retval.ContinuationArgument = null;
 					return retval;
 				}
 #if DEBUG
@@ -44,14 +48,10 @@ namespace Lidgren.Core
 
 		public static void Release(JobCompletion completion)
 		{
-			completion.Completed = 0;
-			completion.ContinuationAtCount = 0;
-			completion.Continuation = null;
-			completion.ContinuationName = null;
-			completion.ContinuationArgument = null;
-
 			lock (s_free)
+			{
 				s_free.Add(completion);
+			}
 		}
 	}
 }

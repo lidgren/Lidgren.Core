@@ -8,6 +8,8 @@ namespace UnitTests
 	[TestClass]
 	public class JobServiceTests
 	{
+		private double m_delayEnded, m_delayStarted;
+
 		[TestMethod]
 		public void TestJobService()
 		{
@@ -26,6 +28,13 @@ namespace UnitTests
 
 			// schedule a single job to run; returns immediately
 			JobService.Enqueue((x) => { Console.WriteLine("hello from job"); });
+
+			m_delayStarted = TimeService.Wall;
+			m_delayEnded = 0;
+			JobService.Enqueue("delayed", (x) =>
+			{
+				m_delayEnded = TimeService.Wall;
+			}, null, 1.8);
 
 			// runs action(argument) on a worker thread; returns immediately
 			JobService.Enqueue("singleFF", action, argument);
@@ -60,6 +69,10 @@ namespace UnitTests
 			// schedule work to be done on each argument in list; returns immediately
 			JobService.ForEachArgument("feArgFF", action, argumentsList, null, null);
 
+			Thread.Sleep(2250);
+
+			double delay = m_delayEnded - m_delayStarted;
+			Assert.IsTrue(delay > 1.8 && delay < 1.9, $"Delay is {delay} should be >1.8");
 
 			JobService.Shutdown();
 		}
