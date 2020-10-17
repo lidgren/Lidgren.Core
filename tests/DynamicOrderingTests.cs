@@ -62,18 +62,25 @@ namespace UnitTests
 				new TestItem("Pear", 2, ConcType.Fruit, 1),
 			};
 
-			var scheduler = new DynamicScheduler<TestItem>(items);
-			scheduler.Execute("stuffs", "hello");
+			var scheduler = new DynamicScheduler<TestItem, object>(items);
+			scheduler.Execute("stuffs", Done, null);
+		}
+
+		private void Done(object obj)
+		{
+			Console.WriteLine("Schedule done");
 		}
 	}
 
 	[DebuggerDisplay("{m_name}")]
-	public class TestItem : IDynamicOrdered, IDynamicScheduled
+	public class TestItem : IScheduleItem<TestItem, object>
 	{
 		private string m_name;
 		private int m_sleepTime;
 
 		public string Name => m_name;
+
+		public ScheduleHint Hint => m_prio == 0 ? ScheduleHint.Early : ScheduleHint.Default;
 
 		private ConcType m_concType;
 		private int m_prio;
@@ -96,20 +103,17 @@ namespace UnitTests
 			Thread.Sleep(m_sleepTime);
 		}
 
-		public DynamicOrder OrderAgainst(object otherOb)
+		public ScheduleOrder ScheduleAgainst(TestItem other)
 		{
-			var other = otherOb as TestItem;
 			if (m_prio > other.m_prio)
-				return DynamicOrder.PreferABeforeB;
+				return ScheduleOrder.RunAfter;
 			if (other.m_prio > m_prio)
-				return DynamicOrder.PreferBBeforeA;
-			return DynamicOrder.AnyOrder;
-		}
+				return ScheduleOrder.RunBefore;
 
-		public bool CanRunConcurrently(object other)
-		{
-			var ot = other as TestItem;
-			return m_concType != ot.m_concType;
+			if (other.m_concType == m_concType)
+				return ScheduleOrder.AnyOrderNotConcurrent;
+
+			return ScheduleOrder.AnyOrderConcurrent;
 		}
 	}
 

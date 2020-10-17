@@ -1,181 +1,217 @@
-﻿#nullable enable
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Threading;
 
 namespace Lidgren.Core
 {
-	public interface IDynamicScheduled : IDynamicOrdered
+	public enum ScheduleOrder
 	{
-		string Name { get; }
-		bool CanRunConcurrently(object other);
-		void Execute(object? argument);
+		RunBefore = 0,
+		AnyOrderConcurrent = 1,
+		AnyOrderNotConcurrent = 2,
+		RunAfter = 3,
 	}
 
-	public class DynamicScheduler<T> where T : IDynamicScheduled
+	public enum ScheduleHint
 	{
-		private readonly T[] m_items;
-		private readonly RuntimeItem[] m_runtimeItems;
-		private readonly SymmetricMatrixBool m_concurrencyAllowed;
+		VeryEarly,
+		Early,
+		Default,
+		Late,
+		VeryLate,
+	}
 
-		private struct RuntimeItem
+	public interface IScheduleItem<TItem, TArg>
+	{
+		string Name { get; }
+		ScheduleHint Hint { get; }
+		ScheduleOrder ScheduleAgainst(TItem other);
+		void Execute(TArg argument);
+	}
+
+	public class DynamicScheduler<TItem, TArg> where TItem : IScheduleItem<TItem, TArg> where TArg : class
+	{
+		private enum ItemStatus
 		{
-			public int RequireReleases; // how many other items needs to complete before we can go
-			public int RemainingRequiredReleased; // when this reaches 0; we're good to go
-			public HashSet<int> Releases; // when I complete; which other items to I release?
-			public bool Started;
+			Waiting,
+			Running,
+			Done
 		}
 
-		public DynamicScheduler(ReadOnlySpan<T> items)
+		private ScheduleOrder[] m_order;
+		private TItem[] m_items;
+		private ItemStatus[] m_itemStatus;
+		private TArg m_runArgument;
+
+		public DynamicScheduler(ReadOnlySpan<TItem> scheduleItems)
 		{
-			m_items = items.ToArray();
+			var items = scheduleItems.ToArray();
+			m_itemStatus = new ItemStatus[items.Length];
+			m_order = new ScheduleOrder[items.Length * items.Length];
 
-			// first, just order them
-			bool ok = DynamicOrdering.Perform<T>(m_items, out var error);
-			if (!ok)
-				CoreException.Throw(error);
-
-			for (int i = 0; i < m_items.Length; i++)
-				StdOut.WriteLine("   " + m_items[i].Name, ConsoleColor.DarkCyan);
-
-			m_runtimeItems = new RuntimeItem[m_items.Length];
-			m_concurrencyAllowed = new SymmetricMatrixBool(items.Length);
-			for (int a = 0; a < m_items.Length; a++)
+			Array.Sort(items, (a, b) =>
 			{
-				for (int b = a + 1; b < m_items.Length; b++)
+				int aval = (int)a.Hint;
+				int bval = (int)b.Hint;
+				if (aval > bval)
+					return 1;
+				if (aval < bval)
+					return -1;
+				return 0;
+			});
+
+			// create matrices
+			for (int a = 0; a < items.Length; a++)
+			{
+				for (int b = 0; b < items.Length; b++)
 				{
-					var AtoB = DynamicOrdering.GetOrder(m_items[a], m_items[b]);
+					if (a == b)
+						continue;
 
-					var canRunConcurrently1 = m_items[a].CanRunConcurrently(m_items[b]);
-					var canRunConcurrently2 = m_items[b].CanRunConcurrently(m_items[a]);
-
-					// set up concurrency
-					var crc = canRunConcurrently1 && canRunConcurrently2;
-					m_concurrencyAllowed[a, b] = crc;
-
-					// set up releases
-					if (AtoB == DynamicOrder.RequireABeforeB)
-					{
-						if (m_runtimeItems[a].Releases == null)
-							m_runtimeItems[a].Releases = new HashSet<int>();
-						m_runtimeItems[a].Releases.Add(b);
-					}
-					else if (AtoB == DynamicOrder.RequireBBeforeA)
-					{
-						if (m_runtimeItems[b].Releases == null)
-							m_runtimeItems[b].Releases = new HashSet<int>();
-						m_runtimeItems[b].Releases.Add(a);
-					}
+					var order = items[a].ScheduleAgainst(items[b]);
+					var antiorder = items[b].ScheduleAgainst(items[a]);
+					var resolvedOrder = ResolveOrder(order, antiorder, out bool conflict);
+					if (conflict)
+						CoreException.Throw("Clashing schedule; {items[a].Item.ToString()} and {items[b].Item.ToString()} both wants to run " + order);
+					m_order[a * items.Length + b] = resolvedOrder;
 				}
 			}
 
-			// update RequireReleases for all items now
-			for (int i = 0; i < m_runtimeItems.Length; i++)
-			{
-				ref var item = ref m_runtimeItems[i];
-				if (item.Releases != null)
-				{
-					foreach (var r in item.Releases)
-						m_runtimeItems[r].RequireReleases++;
-				}
-			}
+			m_items = items;
 		}
 
-		private int m_workerIndex; // helper for each worker to get an index
+		private Action<object> m_onCompleted;
+		private object m_onCompletedArgument;
+		private int m_completedItemsCount;
 
-		public void Execute(string jobName, object? argument, int maxConcurrency = int.MaxValue, Action<object?>? continuation = null, object? continuationArgument = null)
+		public void Execute(TArg argument, Action<object> completed, object completionArgument)
 		{
-			CoreException.Assert(JobService.IsInitialized);
+			m_onCompleted = completed;
+			m_onCompletedArgument = completionArgument;
+			m_completedItemsCount = 0;
 
-			lock (m_runtimeItems)
-			{
-				for (int i = 0; i < m_runtimeItems.Length; i++)
-				{
-					ref var item = ref m_runtimeItems[i];
-					item.Started = false;
-					item.RemainingRequiredReleased = item.RequireReleases;
-				}
-			}
-
-			// start wide job
-			m_workerIndex = 0;
-			JobService.EnqueueWideBlock(maxConcurrency, jobName, ExecuteWorker, argument);
+			m_itemStatus.AsSpan().Clear();
+			m_runArgument = argument;
+			FireReadyJobs();
 		}
 
-		internal void ExecuteWorker(object? argument)
+		private void FireReadyJobs()
 		{
-			int myIndex = Interlocked.Increment(ref m_workerIndex) - 1;
+			var items = m_items;
+			var itemStatus = m_itemStatus;
 
-			for (; ; )
+			lock (m_itemStatus)
 			{
-				int runItemIndex = -1;
-				int unstartedCount = 0;
-				lock (m_runtimeItems)
+				// loop over all items
+				for (int a = 0; a < itemStatus.Length; a++)
 				{
-					// find scheduled item due for execution
-					for (int i = 0; i < m_runtimeItems.Length; i++)
+					// only consider items that are waiting
+					var status = itemStatus[a];
+					if (status != ItemStatus.Waiting)
+						continue;
+
+					int aoff = a * items.Length;
+					bool canARun = true;
+
+					// compare to all other items; can this be run?
+					for (int b = 0; b < itemStatus.Length; b++)
 					{
-						ref var item = ref m_runtimeItems[i];
-						if (item.Started)
+						if (a == b)
 							continue;
-						unstartedCount++;
-						if (item.RemainingRequiredReleased > 0)
+						var bstatus = itemStatus[b];
+						var order = m_order[aoff + b];
+
+						if (order == ScheduleOrder.AnyOrderConcurrent)
 							continue;
-
-						// found item!
-						item.Started = true;
-						runItemIndex = i;
-						break;
-					}
-				}
-
-				if (runItemIndex < 0)
-				{
-					// ok, no item for me to execute right now
-
-					if (unstartedCount == 0)
-						return; // all items have been started; exit this worker
-
-					if (myIndex >= unstartedCount)
-						return; // enough workers exist to handle remaining items; exit this worker
-
-					// ok, relax and try again in a while
-					Thread.Sleep(0);
-					continue;
-				}
-
-				while (runItemIndex >= 0)
-				{
-					// yay
-					ref readonly var item = ref m_items[runItemIndex];
-
-					using (new Timing(item.Name))
-						item.Execute(argument);
-
-					// do releases
-					int nextRuntimeItem = -1;
-					lock (m_runtimeItems)
-					{
-						ref var rt = ref m_runtimeItems[runItemIndex];
-						if (rt.Releases != null)
+						if (order == ScheduleOrder.RunAfter) // A has to run after B
 						{
-							foreach (var idx in rt.Releases)
+							if (bstatus != ItemStatus.Done)
 							{
-								int result = Interlocked.Decrement(ref m_runtimeItems[idx].RemainingRequiredReleased);
-								if (result == 0 && nextRuntimeItem == -1)
-								{
-									// yay; proceed to this item immediately
-									nextRuntimeItem = idx;
-									m_runtimeItems[nextRuntimeItem].Started = true;
-								}
+								canARun = false;
+								break;
+							}
+							continue;
+						}
+						if (order == ScheduleOrder.RunBefore) // A has to run before B
+							continue;
+						if (order == ScheduleOrder.AnyOrderNotConcurrent)
+						{
+							if (bstatus == ItemStatus.Running)
+							{
+								canARun = false;
+								break;
 							}
 						}
 					}
-					runItemIndex = nextRuntimeItem;
-				}
 
-				// nothing to immediately continue to; lets loop back and look for other items
-				continue;
+					if (canARun)
+					{
+						// YES! Run this item
+						var item = items[a];
+						itemStatus[a] = ItemStatus.Running;
+						JobService.Enqueue(item.Name, RunItem, item);
+					}
+				}
+			}
+		}
+
+		private void RunItem(object ob)
+		{
+			// yay; perform work
+			var item = (IScheduleItem<TItem, TArg>)ob;
+			item.Execute(m_runArgument);
+			var completed = Interlocked.Increment(ref m_completedItemsCount);
+
+			var idx = Array.IndexOf(m_items, item);
+
+			lock (m_itemStatus)
+			{
+				// work completed might mean some other can now run
+				CoreException.Assert(m_itemStatus[idx] == ItemStatus.Running);
+				m_itemStatus[idx] = ItemStatus.Done;
+			}
+
+			if (completed == m_items.Length)
+			{
+				// ALL DONE!
+				m_onCompleted(m_onCompletedArgument);
+				return;
+			}
+
+			FireReadyJobs();
+		}
+
+		private ScheduleOrder ResolveOrder(ScheduleOrder order, ScheduleOrder antiorder, out bool conflict)
+		{
+			//                                   A:RunBefore       A:AnyOrderConcurrent    A:AnyOrderNotConcurrent   A:RunAfter
+			// 
+			// B:RunBefore                       CONFLICT         RunAfter                RunAfter                   RunAfter
+			// B:AnyOrderConcurrent              RunBefore         AnyOrderConcurrent      AnyOrderNotConcurrent     RunAfter
+			// B:AnyOrderNotConcurrent           RunBefore         AnyOrderNotConcurrent   AnyOrderNotConcurrent     RunAfter
+			// B:RunAfter                        RunBefore         RunBefore               RunBefore                 CONFLICT
+			//
+			conflict = false;
+			switch (order)
+			{
+				case ScheduleOrder.AnyOrderConcurrent:
+					if (antiorder == ScheduleOrder.RunAfter)
+						return ScheduleOrder.RunBefore;
+					if (antiorder == ScheduleOrder.RunBefore)
+						return ScheduleOrder.RunAfter;
+					return antiorder;
+
+				case ScheduleOrder.AnyOrderNotConcurrent:
+					if (antiorder == ScheduleOrder.RunAfter)
+						return ScheduleOrder.RunBefore;
+					if (antiorder == ScheduleOrder.RunBefore)
+						return ScheduleOrder.RunAfter;
+					return ScheduleOrder.AnyOrderNotConcurrent;
+
+				case ScheduleOrder.RunBefore:
+				case ScheduleOrder.RunAfter:
+				default:
+					if (antiorder == order)
+						conflict = true;
+					return order;
 			}
 		}
 	}
