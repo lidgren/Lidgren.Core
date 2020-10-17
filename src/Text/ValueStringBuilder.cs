@@ -35,6 +35,13 @@ namespace Lidgren.Core
 			m_buffer[m_length++] = c;
 		}
 
+		public void Append(bool value)
+		{
+			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written);
+			CoreException.Assert(ok);
+			m_length += written;
+		}
+
 		public void Append(int value)
 		{
 			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written);
