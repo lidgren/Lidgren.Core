@@ -75,6 +75,22 @@ namespace Lidgren.Core
 		}
 
 		/// <summary>
+		/// Peek what the next TryDequeue would result in
+		/// </summary>
+		public bool PeekPriority(out TPriority nextDequeuedPrio)
+		{
+			if (m_count == 0)
+			{
+				nextDequeuedPrio = default;
+				return false;
+			}
+
+			ref readonly var peek = ref m_entries[0];
+			nextDequeuedPrio = peek.Prio;
+			return true;
+		}
+
+		/// <summary>
 		/// Try dequeue the item with the lowest priority value; returns false if queue is empty
 		/// </summary>
 		public bool TryDequeue(out TItem retval)
