@@ -60,7 +60,7 @@ namespace Lidgren.Core
 			{
 				if (s_instancesCount < 0 || PopAnyJob(out job) == false)
 				{
-					if (PopDelayed(Stopwatch.GetTimestamp(), out job) == false)
+					if (PopDelayed(out job) == false)
 						return false;
 				}
 			}

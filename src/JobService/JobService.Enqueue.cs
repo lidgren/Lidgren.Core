@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace Lidgren.Core
 {
@@ -11,20 +13,22 @@ namespace Lidgren.Core
 		private static int s_nextInstance;
 		private static int s_instancesCount;
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static void EnqueueInternal(string name, Action<object> work, object argument, JobCompletion completion = null)
 		{
-			lock (s_instances)
-			{
-				int idx = (s_nextInstance + s_instancesCount) & k_instancesMask;
-				ref var job = ref s_instances[idx];
-				job.Name = name;
-				job.Work = work;
-				job.Argument = argument;
-				job.Completion = completion;
-				s_instancesCount++;
-				CoreException.Assert(s_instancesCount <= s_instances.Length);
-				JobWait.Set();
-			}
+#if DEBUG
+			CoreException.Assert(Monitor.IsEntered(s_instances));
+#endif
+
+			int idx = (s_nextInstance + s_instancesCount) & k_instancesMask;
+			ref var job = ref s_instances[idx];
+			job.Name = name;
+			job.Work = work;
+			job.Argument = argument;
+			job.Completion = completion;
+			s_instancesCount++;
+			CoreException.Assert(s_instancesCount <= s_instances.Length);
+			JobWait.Set();
 		}
 
 		/// <summary>
@@ -33,7 +37,8 @@ namespace Lidgren.Core
 		public static void Enqueue(string name, Action<object> work, object argument)
 		{
 			CoreException.Assert(s_workers != null, "JobService not initialized");
-			EnqueueInternal(name, work, argument, null);
+			lock(s_instances)
+				EnqueueInternal(name, work, argument, null);
 		}
 
 		/// <summary>
@@ -42,7 +47,8 @@ namespace Lidgren.Core
 		public static void Enqueue(Action<object> work, object argument = null)
 		{
 			CoreException.Assert(s_workers != null, "JobService not initialized");
-			EnqueueInternal("unnamed", work, argument, null);
+			lock(s_instances)
+				EnqueueInternal("unnamed", work, argument, null);
 		}
 
 		/// <summary>
@@ -61,7 +67,8 @@ namespace Lidgren.Core
 			completion.ContinuationName = continuationName;
 #endif
 
-			EnqueueInternal(name, work, argument, completion);
+			lock(s_instances)
+				EnqueueInternal(name, work, argument, completion);
 		}
 
 		/// <summary>
@@ -70,8 +77,11 @@ namespace Lidgren.Core
 		public static void EnqueueWide(string name, Action<object> work, object argument)
 		{
 			CoreException.Assert(s_workers != null, "JobService not initialized");
-			for (int i = 0; i < s_workers.Length; i++)
-				EnqueueInternal(name, work, argument, null);
+			lock (s_instances)
+			{
+				for (int i = 0; i < s_workers.Length; i++)
+					EnqueueInternal(name, work, argument, null);
+			}
 		}
 
 		/// <summary>
@@ -93,8 +103,11 @@ namespace Lidgren.Core
 
 			var completion = JobCompletion.Acquire();
 			completion.ContinuationAtCount = -1;
-			for (int i = 0; i < numJobs; i++)
-				EnqueueInternal(name, work, argument, completion);
+			lock (s_instances)
+			{
+				for (int i = 0; i < numJobs; i++)
+					EnqueueInternal(name, work, argument, completion);
+			}
 			work(argument); // do one run on this thread as well
 			completion.WaitAndRelease(numJobs);
 		}
@@ -114,8 +127,11 @@ namespace Lidgren.Core
 #if DEBUG
 			completion.ContinuationName = name + "Contd";
 #endif
-			for (int i = 0; i < numJobs; i++)
-				EnqueueInternal(name, work, argument, completion);
+			lock (s_instances)
+			{
+				for (int i = 0; i < numJobs; i++)
+					EnqueueInternal(name, work, argument, completion);
+			}
 		}
 	}
 }

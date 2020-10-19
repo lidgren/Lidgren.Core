@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Lidgren.Core
 {
@@ -15,15 +16,12 @@ namespace Lidgren.Core
 				s_delayed.Enqueue(earliest, djob);
 		}
 
-		private static bool PopDelayed(long now, out Job job)
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static bool PopDelayed(out Job job)
 		{
-			lock(s_delayed)
-			{
-				if (s_delayed.PeekPriority(out var nextPrio) && now > nextPrio)
-					return s_delayed.TryDequeue(out job);
-				job = default;
-				return false;
-			}
+			var now = Stopwatch.GetTimestamp();
+			lock (s_delayed)
+				return s_delayed.TryDequeue(out job, now);
 		}
 	}
 }

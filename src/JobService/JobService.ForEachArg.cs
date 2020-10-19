@@ -23,8 +23,11 @@ namespace Lidgren.Core
 #if DEBUG
 			completion.ContinuationName = name + "Contd";
 #endif
-			foreach (var argument in arguments)
-				EnqueueInternal(name, work, argument, completion);
+			lock (s_instances)
+			{
+				foreach (var argument in arguments)
+					EnqueueInternal(name, work, argument, completion);
+			}
 		}
 
 		/// <summary>
@@ -45,8 +48,11 @@ namespace Lidgren.Core
 
 			int numJobs = arguments.Length - 1;
 			var completion = JobCompletion.Acquire();
-			foreach (var argument in arguments.Slice(1))
-				EnqueueInternal(name, work, argument, completion);
+			lock (s_instances)
+			{
+				foreach (var argument in arguments.Slice(1))
+					EnqueueInternal(name, work, argument, completion);
+			}
 
 			// run one time on this thread
 			using (new Timing(name))

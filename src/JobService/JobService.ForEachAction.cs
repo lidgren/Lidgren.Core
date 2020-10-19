@@ -17,7 +17,8 @@ namespace Lidgren.Core
 				return;
 			if (numJobs == 1)
 			{
-				EnqueueInternal(name, works[0], argument);
+				lock(s_instances)
+					EnqueueInternal(name, works[0], argument);
 				return;
 			}
 
@@ -29,8 +30,11 @@ namespace Lidgren.Core
 			completion.ContinuationName = name + "Contd";
 #endif
 
-			foreach (var work in works)
-				EnqueueInternal(name, work, argument, completion);
+			lock (s_instances)
+			{
+				foreach (var work in works)
+					EnqueueInternal(name, work, argument, completion);
+			}
 		}
 
 		/// <summary>
@@ -50,8 +54,11 @@ namespace Lidgren.Core
 
 			int numJobs = works.Length - 1;
 			var completion = JobCompletion.Acquire();
-			foreach (var work in works.Slice(1))
-				EnqueueInternal(name, work, argument, completion);
+			lock (s_instances)
+			{
+				foreach (var work in works.Slice(1))
+					EnqueueInternal(name, work, argument, completion);
+			}
 
 			// run one time on this thread
 			using (new Timing(name))
