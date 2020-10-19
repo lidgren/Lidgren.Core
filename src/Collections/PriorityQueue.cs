@@ -91,6 +91,27 @@ namespace Lidgren.Core
 		}
 
 		/// <summary>
+		/// Try dequeue the item with the lowest priority value; returns false if queue is empty or if the lowest priority is higher than threshold
+		/// </summary>
+		public bool TryDequeue(out TItem retval, TPriority threshold)
+		{
+			if (m_count == 0)
+			{
+				retval = default;
+				return false;
+			}
+
+			ref readonly var peek = ref m_entries[0];
+			if (peek.Prio.CompareTo(threshold) > 0)
+			{
+				retval = default;
+				return false;
+			}
+
+			return TryDequeue(out retval);
+		}
+
+		/// <summary>
 		/// Try dequeue the item with the lowest priority value; returns false if queue is empty
 		/// </summary>
 		public bool TryDequeue(out TItem retval)
