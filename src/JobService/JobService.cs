@@ -16,6 +16,15 @@ namespace Lidgren.Core
 		internal static AutoResetEvent JobWait = new AutoResetEvent(true);
 		internal static int m_idleWorkers;
 
+		/// <summary>
+		/// returns worker index, or -1 if not jobservice thread
+		/// </summary>
+		public static int GetWorkerForCurrentThread()
+		{
+			var worker = JobWorker.WorkerForThread;
+			return worker == null ? -1 : worker.Index;
+		}
+		
 		public static void Initialize()
 		{
 			using var _ = new Timing("jobsvcinit");
@@ -38,7 +47,7 @@ namespace Lidgren.Core
 
 		// execute one job on this thread (owned by worker)
 		// return true if a job was found and executed
-		internal static bool ExecuteOneJob(JobWorker worker, JobCompletion requiredCompletion = null)
+		internal static bool ExecuteAnyJob(JobWorker worker, JobCompletion requiredCompletion = null)
 		{
 			Job job;
 

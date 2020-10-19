@@ -16,6 +16,8 @@ namespace Lidgren.Core
 		private JobWorkerState m_state;
 		private string m_name;
 
+		public int Index { get; private set; }
+
 		[ThreadStatic]
 		private static JobWorker s_workerForThread;
 
@@ -38,6 +40,8 @@ namespace Lidgren.Core
 
 		public JobWorker(int index)
 		{
+			Index = index;
+
 			m_thread = new Thread(new ThreadStart(Run));
 			m_thread.IsBackground = true;
 			m_name = "JobWorker#" + index.ToString();
@@ -67,8 +71,7 @@ namespace Lidgren.Core
 				if (m_state == JobWorkerState.TimingFlushTriggered)
 					TimingThread.Instance.InternalFlush();
 
-				bool jobDone = JobService.ExecuteOneJob(this);
-				if (jobDone)
+				if (JobService.ExecuteAnyJob(this))
 					continue;
 
 				// wait for a job to be queued (may give false positives but...)

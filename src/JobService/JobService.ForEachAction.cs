@@ -58,7 +58,7 @@ namespace Lidgren.Core
 				works[0](argument);
 
 			// then, try to steal relevant jobs if possible
-			while (JobService.ExecuteOneJob(null, completion))
+			while (JobService.ExecuteAnyJob(null, completion))
 				;
 
 			completion.WaitAndRelease(numJobs);

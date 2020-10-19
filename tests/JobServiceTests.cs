@@ -15,6 +15,9 @@ namespace UnitTests
 		{
 			JobService.Initialize();
 
+			//TimingService.IsEnabled = true;
+			//var chrome = new ChromeTraceTimingConsumer("jobtests.json");
+
 			Console.WriteLine($"JobService running with {JobService.WorkersCount.ToString()} workers");
 
 			var action = new Action<object>(Work);
@@ -73,6 +76,9 @@ namespace UnitTests
 
 			double delay = m_delayEnded - m_delayStarted;
 			Assert.IsTrue(delay > 1.8 && delay < 1.9, $"Delay is {delay} should be >1.8");
+
+			//TimingService.TriggerFlush(true); // this will set TimingService.IsEnabled to false
+			//chrome.Dispose();
 
 			JobService.Shutdown();
 		}

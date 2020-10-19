@@ -57,7 +57,7 @@ namespace Lidgren.Core
 
 			// am I running within a job? try fetching the JobWorker for this thread
 			var localWorker = JobWorker.WorkerForThread;
-			while (JobService.ExecuteOneJob(localWorker, completion))
+			while (JobService.ExecuteAnyJob(localWorker, completion))
 			;
 
 			completion.WaitAndRelease(numJobs);
