@@ -6,7 +6,7 @@
     <PackageProjectUrl>https://github.com/lidgren/Lidgren.Core</PackageProjectUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>Various core functionality useful to almost every projects</Description>
-    <Version>1.0.9</Version>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
 </Project>
