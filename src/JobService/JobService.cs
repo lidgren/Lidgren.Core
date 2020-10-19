@@ -76,7 +76,10 @@ namespace Lidgren.Core
 				job.Work(job.Argument);
 			}
 
-			OnJobCompleted(ref job);
+			var cmp = job.Completion;
+			if (cmp != null)
+				cmp.IncrementCompleted();
+
 			return true;
 		}
 
@@ -133,7 +136,7 @@ namespace Lidgren.Core
 						{
 							var nxt = (idx + 1) & k_instancesMask;
 							s_instances[idx] = s_instances[nxt];
-							nxt = idx;
+							idx = nxt;
 						}
 						s_instancesCount = cnt - 1;
 						return true;
@@ -143,29 +146,6 @@ namespace Lidgren.Core
 
 				job = default;
 				return false;
-			}
-		}
-
-		private static void OnJobCompleted(ref Job job)
-		{
-			var cmp = job.Completion;
-			if (cmp != null)
-			{
-				int cac = cmp.ContinuationAtCount;
-				var numCompleted = Interlocked.Increment(ref cmp.Completed);
-				if (numCompleted == cac)
-				{
-					if (cmp.Continuation != null)
-					{
-						using (new Timing(cmp.ContinuationName == null ? "continuation" : cmp.ContinuationName))
-						{
-							var post = cmp.Continuation;
-							var postArg = cmp.ContinuationArgument;
-							JobCompletion.Release(cmp);
-							post(postArg);
-						}
-					}
-				}
 			}
 		}
 

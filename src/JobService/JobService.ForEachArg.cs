@@ -45,7 +45,6 @@ namespace Lidgren.Core
 
 			int numJobs = arguments.Length - 1;
 			var completion = JobCompletion.Acquire();
-			CoreException.Assert(completion.Completed == 0);
 			foreach (var argument in arguments.Slice(1))
 				EnqueueInternal(name, work, argument, completion);
 

@@ -9,7 +9,7 @@ namespace Lidgren.Core
 #if DEBUG
 		private static int s_totalNumCreated = 0;
 #endif
-		public int Completed;
+		private int m_numCompleted;
 
 		public volatile int ContinuationAtCount;
 		public Action<object> Continuation;
@@ -19,9 +19,13 @@ namespace Lidgren.Core
 		public void WaitAndRelease(int completionCount)
 		{
 			CoreException.Assert(Continuation == null, "Can't use WaitAndRelease while also using a continuation");
-
-			while (Volatile.Read(ref Completed) < completionCount)
+			for (; ; )
+			{
+				var comp = Volatile.Read(ref m_numCompleted);
+				if (comp >= completionCount)
+					break;
 				Thread.Sleep(0);
+			}
 			JobCompletion.Release(this);
 		}
 
@@ -31,11 +35,7 @@ namespace Lidgren.Core
 			{
 				if (s_free.TryPop(out var retval))
 				{
-					retval.Completed = 0;
-					retval.ContinuationAtCount = 0;
-					retval.Continuation = null;
-					retval.ContinuationName = null;
-					retval.ContinuationArgument = null;
+					retval.ResetForReuse();
 					return retval;
 				}
 #if DEBUG
@@ -46,11 +46,36 @@ namespace Lidgren.Core
 			}
 		}
 
+		private void ResetForReuse()
+		{
+			m_numCompleted = 0;
+			ContinuationAtCount = 0;
+			Continuation = null;
+			ContinuationName = null;
+			ContinuationArgument = null;
+		}
+
 		public static void Release(JobCompletion completion)
 		{
 			lock (s_free)
 			{
 				s_free.Add(completion);
+			}
+		}
+
+		internal void IncrementCompleted()
+		{
+			int cac = ContinuationAtCount;
+			var numCompleted = Interlocked.Increment(ref m_numCompleted);
+			if (numCompleted == cac && Continuation != null)
+			{
+				using (new Timing(ContinuationName == null ? "continuation" : ContinuationName))
+				{
+					var post = Continuation;
+					var postArg = ContinuationArgument;
+					JobCompletion.Release(this);
+					post(postArg);
+				}
 			}
 		}
 	}
