@@ -280,12 +280,13 @@ namespace Lidgren.Core
 					}
 				}
 
-				int numChunks = data.Length / 8;
+				int numChunks = Math.DivRem(data.Length, 8, out var remainder);
+				int fastBytes = data.Length - remainder;
 				if (numChunks > 0)
 				{
 					// add full ulongs
 					ulong hash = m_hash;
-					var chunks = MemoryMarshal.Cast<byte, ulong>(data.Slice(0, numChunks * 8));
+					var chunks = MemoryMarshal.Cast<byte, ulong>(data.Slice(0, fastBytes));
 					for (int i = 0; i < chunks.Length; i++)
 					{
 						ulong bits = chunks[i];
@@ -300,6 +301,9 @@ namespace Lidgren.Core
 
 				// add remaining bytes; they will fit into unit
 				CoreException.Assert(m_bitCount == 0);
+
+				data = data.Slice(fastBytes);
+				CoreException.Assert(data.Length >= 0 && data.Length <= 7, "how?");
 				switch (data.Length)
 				{
 					case 0:
