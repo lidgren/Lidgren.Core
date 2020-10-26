@@ -56,6 +56,15 @@ namespace Lidgren.Core
 			return ReadOnlySpan.ToString();
 		}
 
+		public void Replace(char oldChar, char newChar)
+		{
+			for (int i = 0; i < m_length; i++)
+			{
+				if (m_backing[i] == oldChar)
+					m_backing[i] = newChar;
+			}
+		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void EnsureCapacity(int added)
 		{
