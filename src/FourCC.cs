@@ -82,15 +82,10 @@ namespace Lidgren.Core
 			if (text.Length < 4)
 				return false;
 
-			throw new NotImplementedException();
+			Span<char> arr = stackalloc char[4];
+			ToString(arr);
 
-			//return text[0] == (char)(Value & 255u) &&
-			//into[1] = (char)(Value >> 8 & 255u);
-			//into[2] = (char)(Value >> 16 & 255u);
-			//into[3] = (char)(Value >> 24 & 255u);
-			//
-			//var textValue = (uint)((uint)text[3] << 24 | (uint)text[2] << 16 | (uint)text[1] << 8 | text[0]);
-			//return textValue == Value;
+			return arr.SequenceEqual(text);
 		}
 
 		public override bool Equals(object? obj)
