@@ -24,8 +24,8 @@ namespace Lidgren.Core
 			var worker = JobWorker.WorkerForThread;
 			return worker == null ? -1 : worker.Index;
 		}
-		
-		public static void Initialize()
+
+		public static void Initialize(int numWorkers = -1)
 		{
 			using var _ = new Timing("jobsvcinit");
 
@@ -38,7 +38,9 @@ namespace Lidgren.Core
 				var hwThreads = Environment.ProcessorCount;
 
 				// minimum 2 job workers; some may assume at least some concurrency
-				int numWorkers = (hwThreads <= 2) ? 2 : hwThreads - (1 + (hwThreads / 8));
+				if (numWorkers == -1)
+					numWorkers = (hwThreads <= 2) ? 2 : hwThreads - (1 + (hwThreads / 8));
+
 				s_workers = new JobWorker[numWorkers];
 				for (int i = 0; i < numWorkers; i++)
 					s_workers[i] = new JobWorker(i);
