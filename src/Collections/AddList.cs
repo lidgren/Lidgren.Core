@@ -20,6 +20,15 @@ namespace Lidgren.Core
 		public ReadOnlySpan<T> Span => new Span<T>(m_items, 0, m_count);
 		public ReadOnlySpan<T> ReadOnlySpan => new ReadOnlySpan<T>(m_items, 0, m_count);
 
+		public AddList()
+		{
+		}
+
+		public AddList(int capacity)
+		{
+			m_items = new T[capacity];
+		}
+
 		// cold path, never inline
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		private T[] Grow(int minAdd)
