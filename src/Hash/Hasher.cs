@@ -254,6 +254,24 @@ namespace Lidgren.Core
 				Add(data[offset++]);
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Add(ReadOnlySpan<int> data)
+		{
+			Add(MemoryMarshal.Cast<int, byte>(data));
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Add(ReadOnlySpan<uint> data)
+		{
+			Add(MemoryMarshal.Cast<uint, byte>(data));
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Add(ReadOnlySpan<ushort> data)
+		{
+			Add(MemoryMarshal.Cast<ushort, byte>(data));
+		}
+
 		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 		public void Add(ReadOnlySpan<byte> data)
 		{
@@ -369,10 +387,17 @@ namespace Lidgren.Core
 				Add((ushort)c);
 		}
 
-		public void AddStructBytes<T>(ref T item, int sizeInBytes) where T : struct
+		public void AddStructBytes<T>(ref T item) where T : unmanaged
 		{
+			int sizeInBytes = Unsafe.SizeOf<T>();
 			ReadOnlySpan<T> span = MemoryMarshal.CreateSpan<T>(ref item, sizeInBytes);
 			ReadOnlySpan<byte> bytes = MemoryMarshal.AsBytes<T>(span);
+			Add(bytes);
+		}
+
+		public void AddStructBytes<T>(ReadOnlySpan<T> items) where T : unmanaged
+		{
+			var bytes = MemoryMarshal.Cast<T, byte>(items);
 			Add(bytes);
 		}
 
