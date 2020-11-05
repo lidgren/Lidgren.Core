@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Lidgren.Core
 {
@@ -151,6 +153,15 @@ namespace Lidgren.Core
 		}
 
 		/// <summary>
+		/// To big endian hex value (ie. #FFA50033 for orange with 20% opacity)
+		/// </summary>
+		public int ToHex(Span<char> str)
+		{
+			uint big = ((uint)R << 24) | ((uint)G << 16) | ((uint)B << 8) | (uint)A;
+			return StringUtils.ToHex(big, str, 8);
+		}
+
+		/// <summary>
 		/// Convert from big endian hex value (ie. #FFA50033 for orange with 20% opacity)
 		/// </summary>
 		public static Color FromHex(ReadOnlySpan<char> hex)
@@ -195,12 +206,29 @@ namespace Lidgren.Core
 			return new Color(value);
 		}
 
+		/// <summary>
+		/// Generate a random color
+		/// </summary>
 		public static Color Generate(float saturation = 0.95f)
 		{
 			var hue = PRNG.NextFloat();
 			double r, g, b;
 			HSVtoRGB(hue, saturation, 0.95f, out r, out g, out b);
 			return new Color((float)r, (float)g, (float)b);
+		}
+
+		/// <summary>
+		/// Generate x colors which are as far apart as possible
+		/// </summary>
+		public static void GenerateMultiple(Span<Color> output, float saturation = 0.95f)
+		{
+			for (int i = 0; i < output.Length; i++)
+			{
+				var hue = ((0.618033988749895 * (i + 1)) % 1.0);
+				double r, g, b;
+				HSVtoRGB(hue, saturation, 0.95f, out r, out g, out b);
+				output[i] = new Color((float)r, (float)g, (float)b);
+			}
 		}
 
 		// Expects and returns values in the range 0 to 1
@@ -450,5 +478,34 @@ namespace Lidgren.Core
 		public static readonly Color WhiteSmoke = Color.FromBgra(4294309365u);
 		public static readonly Color Yellow = Color.FromBgra(4294967040u);
 		public static readonly Color YellowGreen = Color.FromBgra(4288335154u);
+	}
+
+	public sealed class ColorJsonConverter : JsonConverter<Color>
+	{
+		public static readonly ColorJsonConverter Instance = new ColorJsonConverter();
+
+		public override Color Read(ref Utf8JsonReader rdr, Type typeToConvert, JsonSerializerOptions options)
+		{
+			return Read(ref rdr);
+		}
+
+		public static Color Read(ref Utf8JsonReader rdr)
+		{
+			Span<char> arr = stackalloc char[rdr.ValueSpan.Length];
+			for (int i = 0; i < rdr.ValueSpan.Length; i++)
+				arr[i] = (char)rdr.ValueSpan[i];
+			return Color.FromHex(arr);
+		}
+
+#if NET5
+		[SkipLocalsInit]
+#endif
+		public override void Write(Utf8JsonWriter wrt, Color value, JsonSerializerOptions options)
+		{
+			Span<char> arr = stackalloc char[8];
+			var len = value.ToHex(arr);
+			CoreException.Assert(len == 8);
+			wrt.WriteStringValue(arr);
+		}
 	}
 }
