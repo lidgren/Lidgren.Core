@@ -4,7 +4,7 @@ using System.Diagnostics;
 namespace Lidgren.Core
 {
 	/// <summary>
-	/// Heap based priority queue
+	/// Priority queue using a min binary heap
 	/// </summary>
 	public class PriorityQueue<TPriority, TItem> where TPriority : struct, IComparable<TPriority>
 	{
@@ -42,9 +42,10 @@ namespace Lidgren.Core
 			cnt++;
 			m_count = cnt;
 
+			// bubble up
 			while (idx > 0)
 			{
-				int parentIndex = (idx - 1) / 2;
+				int parentIndex = (idx - 1) >> 1;
 				ref readonly var parent = ref m_entries[parentIndex];
 				if (parent.Prio.CompareTo(prio) <= 0)
 					break;
@@ -112,6 +113,17 @@ namespace Lidgren.Core
 		}
 
 		/// <summary>
+		/// Dequeues the item with the lowest priority value; throws exception if queue is empty
+		/// </summary>
+		public TItem Dequeue()
+		{
+			if (m_count == 0)
+				CoreException.Throw("Queue is empty");
+			var ok = TryDequeue(out var retval);
+			return retval;
+		}
+
+		/// <summary>
 		/// Try dequeue the item with the lowest priority value; returns false if queue is empty
 		/// </summary>
 		public bool TryDequeue(out TItem retval)
@@ -128,22 +140,77 @@ namespace Lidgren.Core
 			var root = m_entries[cnt];
 			m_count = cnt;
 
-			int i = 0;
-			while (i * 2 + 1 < cnt)
+			// pull up
+			int index = 0;
+			for(; ;)
 			{
-				int a = i * 2 + 1;
-				int b = i * 2 + 2;
-				int c = b < cnt && m_entries[b].Prio.CompareTo(m_entries[a].Prio) < 0 ? b : a;
+				var leftChild = index * 2 + 1;
+				if (leftChild >= cnt)
+					break;
+				int rightChild = index * 2 + 2;
+				int swapIndex = rightChild < cnt && m_entries[rightChild].Prio.CompareTo(m_entries[leftChild].Prio) < 0 ? rightChild : leftChild;
 
-				ref readonly var cmp = ref m_entries[c];
+				ref readonly var cmp = ref m_entries[swapIndex];
 				if (cmp.Prio.CompareTo(root.Prio) >= 0)
 					break;
-				m_entries[i] = cmp;
-				i = c;
+				m_entries[index] = cmp;
+				index = swapIndex;
 			}
 
 			if (cnt > 0)
-				m_entries[i] = root;
+				m_entries[index] = root;
+			return true;
+		}
+
+		private int GetItemIndex(in TItem item)
+		{
+			int count = m_count;
+			for (int i = 0; i < count; i++)
+			{
+				ref var entry = ref m_entries[i];
+				if (item is null)
+				{
+					if (entry.Item is null)
+						return i;
+					continue;
+				}
+				if (item.Equals(entry.Item))
+					return i;
+			}
+			return -1;
+		}
+
+		/// <summary>
+		/// Remove first item found from queue
+		/// </summary>
+		public bool Remove(in TItem item)
+		{
+			var index = GetItemIndex(item);
+			if (index == -1)
+				return false;
+
+			int cnt = m_count - 1;
+			var root = m_entries[cnt];
+			m_count = cnt;
+
+			// pull up
+			for (; ; )
+			{
+				var leftChild = index * 2 + 1;
+				if (leftChild >= cnt)
+					break;
+				int rightChild = index * 2 + 2;
+				int swapIndex = rightChild < cnt && m_entries[rightChild].Prio.CompareTo(m_entries[leftChild].Prio) < 0 ? rightChild : leftChild;
+
+				ref readonly var cmp = ref m_entries[swapIndex];
+				if (cmp.Prio.CompareTo(root.Prio) >= 0)
+					break;
+				m_entries[index] = cmp;
+				index = swapIndex;
+			}
+
+			if (cnt > 0)
+				m_entries[index] = root;
 			return true;
 		}
 
