@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Lidgren.Core
 {
@@ -7,7 +6,7 @@ namespace Lidgren.Core
 	/// Thread safe pool of objects
 	/// Example usage: new Pool<MyClass>(() => new MyClass(), 35);
 	/// </summary>
-	public sealed class Pool<T> where T : class
+	public class Pool<T> where T : class
 	{
 		public delegate T CreationDelegate();
 

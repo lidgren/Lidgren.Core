@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 
 namespace Lidgren.Core
 {
@@ -17,16 +18,18 @@ namespace Lidgren.Core
 		/// <summary>
 		/// If non-null; calls dispose and nulls this reference. Locks on 'this' if no lock object provided, concurrent safe, will dispose exactly one time.
 		/// </summary>
-		public static bool Dispose<T>(ref T ob, object lockObject = null) where T : class, IDisposable
+		public static bool Dispose<T>(ref T? ob, object? lockObject = null) where T : class, IDisposable
 		{
 			var myRef = ob;
 
-			if (lockObject is null)
+			if (lockObject == null)
 				lockObject = myRef;
 
 			if (myRef != null)
 			{
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
 				lock (lockObject)
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 				{
 					if (ob != myRef)
 						return false; // someone beat us to it

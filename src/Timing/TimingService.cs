@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -7,8 +8,8 @@ namespace Lidgren.Core
 {
 	public static class TimingService
 	{
-		private static FastList<TimingThread> s_threads = new FastList<TimingThread>(16);
-		private static FastList<Action<TimingThread, TimingEntry[], int>> s_listeners = new FastList<Action<TimingThread, TimingEntry[], int>>(2);
+		private static readonly FastList<TimingThread> s_threads = new FastList<TimingThread>(16);
+		private static readonly FastList<Action<TimingThread, TimingEntry[], int>> s_listeners = new FastList<Action<TimingThread, TimingEntry[], int>>(2);
 
 		public static bool IsEnabled { get; set; }
 

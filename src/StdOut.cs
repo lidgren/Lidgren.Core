@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Diagnostics;
 
 namespace Lidgren.Core
@@ -9,7 +10,7 @@ namespace Lidgren.Core
 	public static class StdOut
 	{
 		// Console is thread safe; but to ensure coloring is atomic we use a lock
-		private static object s_lock = new object();
+		private static readonly object s_lock = new object();
 
 		/// <summary>
 		/// Writes to console

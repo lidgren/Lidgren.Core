@@ -74,7 +74,7 @@ namespace Lidgren.Core
 			{
 				if (s_runOnceHasRan.Contains(identifier))
 				{
-					Throw("Identifier " + identifier + " ran more than once!");
+					Throw($"Identifier {identifier} ran more than once!");
 					return;
 				}
 				s_runOnceHasRan.Add(identifier);

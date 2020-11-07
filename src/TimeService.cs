@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -223,7 +224,7 @@ namespace Lidgren.Core
 		public void Dispose()
 		{
 			var str = m_name + " took " + TimeService.Measure(m_started);
-			Console.WriteLine(str);
+			StdOut.WriteLine(str);
 			Trace.WriteLine(str);
 		}
 	}

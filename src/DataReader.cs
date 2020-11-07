@@ -1,7 +1,6 @@
-﻿using System;
-using System.Buffers;
+﻿#nullable enable
+using System;
 using System.IO;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -12,7 +11,7 @@ namespace Lidgren.Core
 	/// </summary>
 	public ref struct DataReader
 	{
-		private Stream m_stream;
+		private Stream? m_stream;
 
 		private Span<byte> m_buffer;
 		private ReadOnlySpan<byte> m_remaining;

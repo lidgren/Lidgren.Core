@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -140,7 +141,7 @@ namespace Lidgren.Core
 			);
 		}
 
-		public override bool Equals(object obj) => obj is Color color && color.RGBA == RGBA;
+		public override bool Equals(object? obj) => obj is Color color && color.RGBA == RGBA;
 		public override int GetHashCode() => (int)RGBA;
 
 		/// <summary>
@@ -497,9 +498,8 @@ namespace Lidgren.Core
 			return Color.FromHex(arr);
 		}
 
-#if NET5
-		[SkipLocalsInit]
-#endif
+		// SkipLocalsInit requires unsafe :-( 
+		//[SkipLocalsInit]
 		public override void Write(Utf8JsonWriter wrt, Color value, JsonSerializerOptions options)
 		{
 			Span<char> arr = stackalloc char[8];
