@@ -39,16 +39,39 @@ namespace Lidgren.Core
 			if (idx > m_all.Length)
 				return default(ReadOnlySpan<T>);
 
+			var all = m_all;
 			for (; ; )
 			{
 				if (idx >= m_all.Length)
 					break;
-				if (m_all[idx].Equals(delimiter))
+				if (all[idx].Equals(delimiter))
 					break;
 				idx++;
 			}
-			var token = m_all.Slice(m_currentIndex, idx - m_currentIndex);
+			var token = all.Slice(m_currentIndex, idx - m_currentIndex);
 			m_currentIndex = idx + 1;
+			return token;
+		}
+
+		/// <summary>
+		/// Follows same rules as string.Split(delimiter)
+		/// </summary>
+		public ReadOnlySpan<T> PeekNext(T delimiter)
+		{
+			int idx = m_currentIndex;
+			if (idx > m_all.Length)
+				return default(ReadOnlySpan<T>);
+
+			var all = m_all;
+			for (; ; )
+			{
+				if (idx >= m_all.Length)
+					break;
+				if (all[idx].Equals(delimiter))
+					break;
+				idx++;
+			}
+			var token = all.Slice(m_currentIndex, idx - m_currentIndex);
 			return token;
 		}
 
@@ -144,6 +167,33 @@ namespace Lidgren.Core
 			var token = m_all.Slice(m_currentIndex, idx - m_currentIndex);
 			m_currentIndex = idx + 1;
 			return token;
+		}
+
+		/// <summary>
+		/// Returns number of items, up to into.Length
+		/// </summary>
+		public static int Split(ReadOnlySpan<T> data, T delimiter, Span<Range> into)
+		{
+			int count = 0;
+			int start = 0;
+			int idx = 0;
+			while(idx < data.Length)
+			{
+				if (data[idx].Equals(delimiter))
+				{
+					into[count++] = new Range(start, idx);
+					if (count == into.Length)
+						return count;
+					start = idx + 1;
+				}
+				idx++;
+			}
+			if (idx > start)
+				into[count++] = new Range(start, idx);
+			else if (data[idx - 1].Equals(delimiter))
+				into[count++] = new Range(idx - 1, idx - 1); // if ending in delimiter; add extra empty token
+
+			return count;
 		}
 	}
 }
