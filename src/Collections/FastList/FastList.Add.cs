@@ -10,7 +10,9 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		private T[] Grow(int minAddCount)
 		{
-			int newSize = Math.Max(m_count + minAddCount, m_buffer.Length * 2);
+			// Don't grow by doubling; rationale: for huge growth EnsureCapacity should be called or good initialCapacity exists
+			int bufLen = m_buffer.Length;
+			int newSize = Math.Max(bufLen + bufLen / 2, m_count + minAddCount);
 			var old = this.ReadOnlySpan;
 			var newBuffer = new T[newSize];
 			old.CopyTo(newBuffer);
