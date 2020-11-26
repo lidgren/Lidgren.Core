@@ -2,15 +2,17 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 
 namespace Lidgren.Core
 {
-
 	/// <summary>
 	/// 32 bit sequential id. Use Id32.Next() to generate. Valid ids starts at 1.
 	/// </summary>
 	[DebuggerDisplay("{m_id}")]
+	[JsonConverter(typeof(Id32JsonConverter))]
 	public readonly struct Id32 : IEquatable<Id32>, IComparable<Id32>, IComparable<int>, IEquatable<int>
 	{
 		public static readonly Id32 Invalid = new Id32(0);
@@ -47,7 +49,7 @@ namespace Lidgren.Core
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public int CompareTo(Id32 other)
+		public readonly int CompareTo(Id32 other)
 		{
 			if (m_id < other.m_id)
 				return -1;
@@ -57,7 +59,7 @@ namespace Lidgren.Core
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public int CompareTo(int other)
+		public readonly int CompareTo(int other)
 		{
 			if (m_id < other)
 				return -1;
@@ -130,6 +132,18 @@ namespace Lidgren.Core
 		public bool Equals(int other)
 		{
 			return m_id == other;
+		}
+	}
+
+	public class Id32JsonConverter : JsonConverter<Id32>
+	{
+		public static readonly Id32JsonConverter Instance = new Id32JsonConverter();
+
+		public override Id32 Read(ref Utf8JsonReader rdr, Type typeToConvert, JsonSerializerOptions options) => (Id32)rdr.GetInt32();
+
+		public override void Write(Utf8JsonWriter wrt, Id32 value, JsonSerializerOptions options)
+		{
+			wrt.WriteNumberValue((int)value);
 		}
 	}
 }
