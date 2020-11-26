@@ -37,9 +37,9 @@ namespace Lidgren.Core
 			}
 			catch
 			{
-
-				DisposeUtils.Dispose(ref m_rdr);
-				if (m_bufferCreated == true)
+				if (m_rdr != null)
+					DisposeUtils.Dispose(ref m_rdr);
+				if (m_bufferCreated == true && m_buffer != null)
 					ArrayPool<char>.Shared.Return(m_buffer);
 				m_buffer = null;
 				throw;
@@ -64,8 +64,9 @@ namespace Lidgren.Core
 			}
 			catch
 			{
-				DisposeUtils.Dispose(ref m_rdr);
-				if (m_bufferCreated == true)
+				if (m_rdr != null)
+					DisposeUtils.Dispose(ref m_rdr);
+				if (m_bufferCreated == true && m_buffer != null)
 					ArrayPool<char>.Shared.Return(m_buffer);
 				m_bufferCreated = false;
 				m_buffer = null;
@@ -75,7 +76,8 @@ namespace Lidgren.Core
 
 		public void Dispose()
 		{
-			DisposeUtils.Dispose(ref m_rdr);
+			if (m_rdr != null)
+				DisposeUtils.Dispose(ref m_rdr);
 
 			if (m_bufferCreated == true)
 			{
