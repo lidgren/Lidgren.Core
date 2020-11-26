@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -32,6 +33,26 @@ namespace Lidgren.Core
 			var hasher = Hasher.Create();
 			hasher.Add(str);
 			return hasher.Finalize64();
+		}
+
+		/// <summary>
+		/// Hash string converted to utf-8; note: stackallocs 2x length of string
+		/// </summary>
+		public static ulong Utf8Hash64(ReadOnlySpan<char> str)
+		{
+			Span<byte> bytes = stackalloc byte[str.Length * 2];
+			int cnt = System.Text.Encoding.UTF8.GetBytes(str, bytes);
+			return Hash64(bytes.Slice(0, cnt));
+		}
+
+		/// <summary>
+		/// Hash string converted to utf-8; note: stackallocs 2x length of string
+		/// </summary>
+		public static uint Utf8Hash32(ReadOnlySpan<char> str)
+		{
+			Span<byte> bytes = stackalloc byte[str.Length * 2];
+			int cnt = System.Text.Encoding.UTF8.GetBytes(str, bytes);
+			return Hash32(bytes.Slice(0, cnt));
 		}
 
 		public static uint HashLower32(ReadOnlySpan<char> str)
@@ -244,6 +265,14 @@ namespace Lidgren.Core
 			x ^= y;
 			x *= c_WEYLM;
 			return x;
+		}
+
+		public static uint DJBa2(ReadOnlySpan<byte> bytes)
+		{
+			uint hash = 5381;
+			for (int i = 0; i < bytes.Length; i++)
+				hash = ((hash << 5) + hash) ^ bytes[i];
+			return hash;
 		}
 
 		public static uint FNV1aLower(ReadOnlySpan<char> str)
