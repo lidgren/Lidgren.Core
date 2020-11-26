@@ -163,27 +163,43 @@ namespace Lidgren.Core
 		}
 
 		/// <summary>
-		/// Convert from big endian hex value (ie. #FFA50033 for orange with 20% opacity)
+		/// Convert from big endian hex value (ie. #FFA50033 for orange with 20% opacity; or #FF0000 which is Solid Red)
 		/// </summary>
 		public static Color FromHex(ReadOnlySpan<char> hex)
 		{
 			if (hex.Length > 0 && hex[0] == '#')
 				hex = hex.Slice(1);
 
-			uint big = (uint)StringUtils.FromHex(hex);
-
-			uint little =
-				((big & 0xff000000u) >> 24) |
-				((big & 0x00ff0000u) >> 8)  |
-				((big & 0x0000ff00u) << 8)  |
-				((big & 0x000000ffu) << 24);
-
-			return new Color(little);
+			if (hex.Length == 6)
+			{
+				uint big = (uint)StringUtils.FromHex(hex);
+				uint little =
+					((big & 0x00ff0000u) >> 16) | // R
+					(big & 0x0000ff00u) | // G
+					(big & 0x000000ffu) << 16 | // B
+					(255u << 24); // A
+				return new Color(little);
+			}
+			else if (hex.Length == 8)
+			{
+				uint big = (uint)StringUtils.FromHex(hex);
+				uint little =
+					((big & 0xff000000u) >> 24) |
+					((big & 0x00ff0000u) >> 8) |
+					((big & 0x0000ff00u) << 8) |
+					((big & 0x000000ffu) << 24);
+				return new Color(little);
+			}
+			else
+			{
+				CoreException.Throw("Expected 6 or 8 character string; optionally with # prefix");
+				return Color.Black;
+			}
 		}
 
 		public override string ToString()
 		{
-			return RGBA.ToString();
+			return ToHex();
 		}
 
 		public int CompareTo(Color other)
@@ -496,6 +512,14 @@ namespace Lidgren.Core
 			for (int i = 0; i < rdr.ValueSpan.Length; i++)
 				arr[i] = (char)rdr.ValueSpan[i];
 			return Color.FromHex(arr);
+		}
+
+		public static void Write(Utf8JsonWriter wrt, string propertyName, in Color value)
+		{
+			Span<char> arr = stackalloc char[8];
+			var len = value.ToHex(arr);
+			CoreException.Assert(len == 8);
+			wrt.WriteString(propertyName, arr);
 		}
 
 		// SkipLocalsInit requires unsafe :-( 
