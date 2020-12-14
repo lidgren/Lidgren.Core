@@ -33,8 +33,22 @@ namespace UnitTests
 						larger++;
 						break;
 					default:
-						Assert.Fail();
+						Assert.Fail("Value " + val + " isn't 5, 6 or 7");
 						break;
+				}
+
+				// ranged
+				var r1 = (int)PRNG.NextUInt32();
+				var r2 = (int)PRNG.NextUInt32();
+				if (r1 < r2)
+				{
+					var rr = PRNG.Next(r1, r2);
+					Assert.IsTrue(rr >= r1 && rr < r2, rr.ToString() + " is not between " + r1 + " and " + r2);
+				}
+				else if (r1 > r2)
+				{
+					var rr = PRNG.Next(r2, r1);
+					Assert.IsTrue(rr >= r2 && rr < r1, rr.ToString() + " is not between " + r2 + " and " + r1);
 				}
 			}
 
