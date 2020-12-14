@@ -271,5 +271,33 @@ namespace UnitTests
 			Assert.AreEqual(14, span[2]);
 			Assert.AreEqual(3, span.Length);
 		}
+
+		[TestMethod]
+		public void TestGroupBy()
+		{
+			var list = new FastList<int>();
+			list.AddRange(new int[] { 1, 2, 3, 4, 5, 6, 9, 8, 7 });
+
+			var dict = list.GroupBy<string>((x) => ((x & 1) == 0) ? "even" : "odd");
+
+			Assert.AreEqual(2, dict.Count);
+
+			var even = dict["even"];
+			Assert.IsNotNull(even);
+			Assert.AreEqual(4, even.Count);
+			Assert.IsTrue(even.Contains(2));
+			Assert.IsTrue(even.Contains(4));
+			Assert.IsTrue(even.Contains(6));
+			Assert.IsTrue(even.Contains(8));
+
+			var odd = dict["odd"];
+			Assert.IsNotNull(odd);
+			Assert.AreEqual(5, odd.Count);
+			Assert.IsTrue(odd.Contains(1));
+			Assert.IsTrue(odd.Contains(3));
+			Assert.IsTrue(odd.Contains(5));
+			Assert.IsTrue(odd.Contains(7));
+			Assert.IsTrue(odd.Contains(9));
+		}
 	}
 }

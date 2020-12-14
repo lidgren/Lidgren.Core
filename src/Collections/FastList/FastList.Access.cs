@@ -152,5 +152,24 @@ namespace Lidgren.Core
 			Array.Sort<T>(m_buffer, m_offset, m_count, comparer);
 #endif
 		}
+
+		/// <summary>
+		/// Returns dictionary group by delegate
+		/// </summary>
+		public Dictionary<GROUPT, FastList<T>> GroupBy<GROUPT>(Func<T, GROUPT> getGroup)
+		{
+			var retval = new Dictionary<GROUPT, FastList<T>>();
+			foreach (var item in ReadOnlySpan)
+			{
+				var g = getGroup(item);
+				if (retval.TryGetValue(g, out var list) == false)
+				{
+					list = new FastList<T>();
+					retval[g] = list;
+				}
+				list.Add(item);
+			}
+			return retval;
+		}
 	}
 }
