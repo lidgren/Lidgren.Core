@@ -187,16 +187,20 @@ namespace Lidgren.Core
 			CoreException.Assert(maxValue > minValue);
 			unchecked
 			{
-				uint span = (uint)(maxValue - minValue);
-				uint usableRange = uint.MaxValue - (uint.MaxValue % span);
-				uint rnd;
-				do
-				{
-					rnd = NextUInt32(ref state);
-				} while (rnd > usableRange);
+				var x = state;
+				x ^= x >> 12;
+				x ^= x << 25;
+				x ^= x >> 27;
+				state = x;
 
-				var retval = (int)(minValue + (rnd % span));
+				// lemire fastrange
+				ulong rnd = (x * 0x2545F4914F6CDD1D) >> 32; // use upper bits
+				ulong span = (ulong)((long)maxValue - (long)minValue);
+				uint offset = (uint)((rnd * span) >> 32);
+				var retval = (int)(minValue + offset);
+
 				CoreException.Assert(retval >= minValue && retval < maxValue);
+
 				return retval;
 			}
 		}
