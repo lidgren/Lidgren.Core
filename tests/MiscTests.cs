@@ -100,22 +100,5 @@ namespace UnitTests
 			Assert.IsTrue(ok);
 			Assert.AreEqual(facit, seconds);
 		}
-
-		[TestMethod]
-		public void TestMutableString()
-		{
-			var str = new MutableString(5);
-			str.Append("hello");
-			str.Append(45);
-			Assert.AreEqual(7, str.Length);
-			Assert.IsTrue(str.ReadOnlySpan.SequenceEqual("hello45".AsSpan()));
-
-			str.Clear();
-			Assert.AreEqual(0, str.Length);
-			Assert.AreEqual(0, str.ReadOnlySpan.Length);
-
-			str.Append(54321);
-			Assert.AreEqual("54321", str.ToString());
-		}
 	}
 }

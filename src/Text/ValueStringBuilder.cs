@@ -1,161 +1,329 @@
 ﻿#nullable enable
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Lidgren.Core
 {
 	/// <summary>
-	/// Stack allocated string builder backed by (potentially) stack based memory
-	/// 
-	/// Usage:
-	/// Span<char> backing = stackalloc char[64];
-	/// var bdr = new ValueStringBuilder(backing);
-	/// bdr.Append(...
-	/// ... then use .Result or .ToString() to get results
+	/// Replacement for StringBuilder with differences:
+	/// 1. It's a value type
+	/// 2. It takes spans
+	/// 3. Has indentation support
+	/// 4. Newlines are just \n
 	/// </summary>
-	public ref struct ValueStringBuilder
+	public struct ValueStringBuilder
 	{
-		private Span<char> m_buffer;
+		private static readonly string s_tabs = "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t";
+		private char[] m_buffer;
 		private int m_length;
+		private int m_column;
+		private int m_indentionLevel;
 
-		public ReadOnlySpan<char> Result { get { return m_buffer.Slice(0, m_length); } }
+		public readonly int Length => m_length;
+		public readonly Span<char> Span => m_buffer.AsSpan(0, m_length);
+		public readonly ReadOnlySpan<char> ReadOnlySpan => m_buffer.AsSpan(0, m_length);
 
-		public ValueStringBuilder(Span<char> buffer)
+		public ValueStringBuilder(int initialCapacity)
 		{
-			m_buffer = buffer;
+			m_buffer = new char[initialCapacity];
 			m_length = 0;
+			m_column = 0;
+			m_indentionLevel = 0;
+		}
+
+		public void Clear()
+		{
+			m_length = 0;
+			m_column = 0;
+			m_indentionLevel = 0;
+		}
+
+		public int Capacity
+		{
+			readonly get { return m_buffer.Length; }
+			set
+			{
+				var newBuffer = new char[value];
+				m_buffer.AsSpan(0, m_length).CopyTo(newBuffer);
+				m_buffer = newBuffer;
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private void EnsureCapacity(int len)
+		{
+			if (len > m_buffer.Length - m_length)
+				Grow(len);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		private void Grow(int len)
+		{
+			int newSize = Math.Max(m_length + len, m_buffer.Length * 2);
+			Capacity = newSize;
+		}
+
+		public void AppendLine()
+		{
+			EnsureCapacity(1);
+			m_buffer[m_length++] = '\n';
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Indent(int add)
+		{
+			m_indentionLevel += add;
+		}
+
+		// remaining MUST have room for m_indentionLevel characters, and span will be modified
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private void MaybeIndent(ref Span<char> span)
+		{
+			if (m_column != 0)
+				return;
+			var lvl = m_indentionLevel;
+			if (lvl == 0)
+				return;
+			s_tabs.AsSpan(0, lvl).CopyTo(m_buffer.AsSpan(m_length));
+			span = span.Slice(lvl);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void AppendLine(string str)
+		{
+			AppendLine(str.AsSpan());
+		}
+
+		public void AppendLine(ReadOnlySpan<char> str)
+		{
+			if (str.Length == 0)
+			{
+				AppendLine();
+				return;
+			}
+
+			var len = str.Length + m_indentionLevel + 1;
+
+			EnsureCapacity(len);
+			var span = m_buffer.AsSpan(m_length, len);
+
+			MaybeIndent(ref span); // add indention
+			str.CopyTo(span); // add str
+			span = span.Slice(str.Length);
+			span[0] = '\n'; // add newline
+			m_length += len;
+			m_column = 0;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Append(string str)
+		{
+			Append(str.AsSpan());
 		}
 
 		public void Append(ReadOnlySpan<char> str)
 		{
-			str.CopyTo(m_buffer.Slice(m_length));
-			m_length += str.Length;
+			if (str.Length == 0)
+				return;
+			var len = str.Length + m_indentionLevel;
+			EnsureCapacity(len);
+			var span = m_buffer.AsSpan(m_length, len);
+			MaybeIndent(ref span); // add indention
+			str.CopyTo(span); // add str
+			m_length += len;
+			m_column = str.Length;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(char c)
 		{
-			m_buffer[m_length++] = c;
+			var len = 1 + m_indentionLevel;
+			EnsureCapacity(len);
+			var span = m_buffer.AsSpan(m_length, len);
+			MaybeIndent(ref span); // add indention
+			span[0] = c;
+			m_length += len;
+			m_column += 1;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(bool value)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written);
+			var maxLen = 5 + m_indentionLevel;
+			EnsureCapacity(maxLen);
+
+			var span = m_buffer.AsSpan(m_length, maxLen);
+			MaybeIndent(ref span); // add indention
+
+			bool ok = value.TryFormat(span, out int written);
 			CoreException.Assert(ok);
-			m_length += written;
+
+			var actualLen = m_indentionLevel + written;
+			m_length += actualLen;
+			m_column += actualLen;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(int value)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written);
+			var maxLen = 12 + m_indentionLevel;
+			EnsureCapacity(maxLen);
+
+			var span = m_buffer.AsSpan(m_length, maxLen);
+			MaybeIndent(ref span); // add indention
+
+			bool ok = value.TryFormat(span, out int written);
 			CoreException.Assert(ok);
-			m_length += written;
+
+			var actualLen = m_indentionLevel + written;
+			m_length += actualLen;
+			m_column += actualLen;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(uint value)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written);
+			var maxLen = 12 + m_indentionLevel;
+			EnsureCapacity(maxLen);
+
+			var span = m_buffer.AsSpan(m_length, maxLen);
+			MaybeIndent(ref span); // add indention
+
+			bool ok = value.TryFormat(span, out int written);
 			CoreException.Assert(ok);
-			m_length += written;
+
+			var actualLen = m_indentionLevel + written;
+			m_length += actualLen;
+			m_column += actualLen;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Append(byte value)
+		{
+			var maxLen = 12 + m_indentionLevel;
+			EnsureCapacity(maxLen);
+
+			var span = m_buffer.AsSpan(m_length, maxLen);
+			MaybeIndent(ref span); // add indention
+
+			bool ok = value.TryFormat(span, out int written);
+			CoreException.Assert(ok);
+
+			var actualLen = m_indentionLevel + written;
+			m_length += actualLen;
+			m_column += actualLen;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Append(short value)
+		{
+			var maxLen = 12 + m_indentionLevel;
+			EnsureCapacity(maxLen);
+
+			var span = m_buffer.AsSpan(m_length, maxLen);
+			MaybeIndent(ref span); // add indention
+
+			bool ok = value.TryFormat(span, out int written);
+			CoreException.Assert(ok);
+
+			var actualLen = m_indentionLevel + written;
+			m_length += actualLen;
+			m_column += actualLen;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Append(ushort value)
+		{
+			var maxLen = 12 + m_indentionLevel;
+			EnsureCapacity(maxLen);
+
+			var span = m_buffer.AsSpan(m_length, maxLen);
+			MaybeIndent(ref span); // add indention
+
+			bool ok = value.TryFormat(span, out int written);
+			CoreException.Assert(ok);
+
+			var actualLen = m_indentionLevel + written;
+			m_length += actualLen;
+			m_column += actualLen;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(long value)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written);
+			var maxLen = 12 + m_indentionLevel;
+			EnsureCapacity(maxLen);
+
+			var span = m_buffer.AsSpan(m_length, maxLen);
+			MaybeIndent(ref span); // add indention
+
+			bool ok = value.TryFormat(span, out int written);
 			CoreException.Assert(ok);
-			m_length += written;
+
+			var actualLen = m_indentionLevel + written;
+			m_length += actualLen;
+			m_column += actualLen;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(ulong value)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written);
+			var maxLen = 12 + m_indentionLevel;
+			EnsureCapacity(maxLen);
+
+			var span = m_buffer.AsSpan(m_length, maxLen);
+			MaybeIndent(ref span); // add indention
+
+			bool ok = value.TryFormat(span, out int written);
 			CoreException.Assert(ok);
-			m_length += written;
+
+			var actualLen = m_indentionLevel + written;
+			m_length += actualLen;
+			m_column += actualLen;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(float value)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written);
+			var maxLen = 12 + m_indentionLevel;
+			EnsureCapacity(maxLen);
+
+			var span = m_buffer.AsSpan(m_length, maxLen);
+			MaybeIndent(ref span); // add indention
+
+			bool ok = value.TryFormat(span, out int written);
 			CoreException.Assert(ok);
-			m_length += written;
+
+			var actualLen = m_indentionLevel + written;
+			m_length += actualLen;
+			m_column += actualLen;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(double value)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written);
-			CoreException.Assert(ok);
-			m_length += written;
-		}
+			var maxLen = 12 + m_indentionLevel;
+			EnsureCapacity(maxLen);
 
-		public void AppendFormat(ReadOnlySpan<char> format, int value)
-		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written, format: format);
-			CoreException.Assert(ok);
-			m_length += written;
-		}
+			var span = m_buffer.AsSpan(m_length, maxLen);
+			MaybeIndent(ref span); // add indention
 
-		public void AppendFormat(ReadOnlySpan<char> format, float value)
-		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written, format: format);
+			bool ok = value.TryFormat(span, out int written);
 			CoreException.Assert(ok);
-			m_length += written;
-		}
 
-		public void AppendFormat(ReadOnlySpan<char> format, double value)
-		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written, format: format);
-			CoreException.Assert(ok);
-			m_length += written;
-		}
-
-		public void AppendFormat(ReadOnlySpan<char> format, float value, IFormatProvider provider)
-		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written, format: format, provider: provider);
-			CoreException.Assert(ok);
-			m_length += written;
-		}
-
-		public void AppendFormat(ReadOnlySpan<char> format, double value, IFormatProvider provider)
-		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written, format: format, provider: provider);
-			CoreException.Assert(ok);
-			m_length += written;
-		}
-
-		public void AppendFormat(ReadOnlySpan<char> format, uint value)
-		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written, format: format);
-			CoreException.Assert(ok);
-			m_length += written;
-		}
-
-		public void AppendFormat(ReadOnlySpan<char> format, ushort value)
-		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written, format: format);
-			CoreException.Assert(ok);
-			m_length += written;
-		}
-
-		public void AppendFormat(ReadOnlySpan<char> format, ulong value)
-		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written, format: format);
-			CoreException.Assert(ok);
-			m_length += written;
-		}
-
-		public void AppendFormat(ReadOnlySpan<char> format, byte value)
-		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written, format: format);
-			CoreException.Assert(ok);
-			m_length += written;
+			var actualLen = m_indentionLevel + written;
+			m_length += actualLen;
+			m_column += actualLen;
 		}
 
 		public override int GetHashCode()
 		{
-			return (int)HashUtil.Hash32(Result);
+			return (int)HashUtil.Hash32(ReadOnlySpan);
 		}
 
 		public override string ToString()
 		{
-			return Result.ToString();
+			return ReadOnlySpan.ToString();
 		}
 	}
 }
