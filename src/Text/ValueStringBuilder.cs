@@ -316,6 +316,93 @@ namespace Lidgren.Core
 			m_column += actualLen;
 		}
 
+		/// <summary>
+		/// Returns number of characters replaced
+		/// </summary>
+		public int Replace(char oldChar, char newChar)
+		{
+			int retval = 0;
+			int len = m_length;
+			for (int i = 0; i < len; i++)
+			{
+				if (m_buffer[i] == oldChar)
+				{
+					m_buffer[i] = newChar;
+					retval++;
+				}
+			}
+			return retval;
+		}
+
+		/// <summary>
+		/// Returns number of substitutions
+		/// </summary>
+		public int Replace(string oldValue, string newValue)
+		{
+			int retval = 0;
+			
+			if (oldValue.Length == newValue.Length)
+			{
+				// in-place replacement
+				var span = this.Span;
+				for (; ; )
+				{
+					var idx = span.IndexOf(oldValue);
+					if (idx == -1)
+						break;
+					newValue.AsSpan().CopyTo(span.Slice(idx, newValue.Length));
+					retval++;
+					span = span.Slice(idx + 1); // avoid infinite substitutions
+				}
+				return retval;
+			}
+
+			for(; ;)
+			{
+				var span = this.Span;
+				var idx = span.IndexOf(oldValue);
+				if (idx == -1)
+					break;
+				Remove(idx, oldValue.Length);
+				Insert(idx, newValue);
+			}
+			return retval;
+		}
+
+		public void Insert(int index, ReadOnlySpan<char> value)
+		{
+			EnsureCapacity(value.Length);
+			if (index == m_length)
+			{
+				Append(value);
+				return;
+			}
+
+			if (index == 0)
+			{
+				this.ReadOnlySpan.CopyTo(m_buffer.AsSpan(value.Length));
+				value.CopyTo(m_buffer.AsSpan(0, value.Length));
+				m_length += value.Length;
+				return;
+			}
+
+			// in the middle
+			var tail = ReadOnlySpan.Slice(index);
+			tail.CopyTo(m_buffer.AsSpan(index + value.Length));
+			value.CopyTo(m_buffer.AsSpan(index));
+			m_length += value.Length;
+		}
+
+		public void Remove(int index, int length)
+		{
+			int tail = m_length - (index + length);
+			CoreException.Assert(tail >= 0);
+			m_length -= length;
+			if (tail == 0)
+				return;
+			m_buffer.AsSpan(index + length, tail).CopyTo(m_buffer.AsSpan(index, tail));
+		}
+
 		public override int GetHashCode()
 		{
 			return (int)HashUtil.Hash32(ReadOnlySpan);
