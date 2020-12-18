@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Lidgren.Core
@@ -9,14 +10,15 @@ namespace Lidgren.Core
 	/// 1. It's a value type
 	/// 2. It takes spans
 	/// 3. Has indentation support
-	/// 4. Newlines are just \n
 	/// </summary>
 	public struct ValueStringBuilder
 	{
+		private static readonly bool s_crlf = Environment.NewLine.Equals("\n", StringComparison.Ordinal) ? false : true;
 		private static readonly string s_tabs = "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t";
 		private char[] m_buffer;
 		private int m_length;
-		private int m_column;
+
+		private bool m_lineHasIndention;
 		private int m_indentionLevel;
 
 		public readonly int Length => m_length;
@@ -27,14 +29,14 @@ namespace Lidgren.Core
 		{
 			m_buffer = new char[initialCapacity];
 			m_length = 0;
-			m_column = 0;
+			m_lineHasIndention = false;
 			m_indentionLevel = 0;
 		}
 
 		public void Clear()
 		{
 			m_length = 0;
-			m_column = 0;
+			m_lineHasIndention = false;
 			m_indentionLevel = 0;
 		}
 
@@ -63,10 +65,26 @@ namespace Lidgren.Core
 			Capacity = newSize;
 		}
 
+		// assumes capacity exists; returns number of chars added
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private int NewLine(Span<char> span)
+		{
+			if (s_crlf)
+			{
+				span[0] = '\r';
+				span[1] = '\n';
+				return 2;
+			}
+			span[0] = '\n';
+			return 1;
+		}
+
 		public void AppendLine()
 		{
-			EnsureCapacity(1);
-			m_buffer[m_length++] = '\n';
+			EnsureCapacity(2);
+			int len = m_length;
+			len += NewLine(m_buffer.AsSpan(len));
+			m_length = len; 
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -75,17 +93,32 @@ namespace Lidgren.Core
 			m_indentionLevel += add;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Indent(int add, string postAppendLine)
+		{
+			m_indentionLevel += add;
+			AppendLine(postAppendLine);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void Indent(string preAppendLine, int add)
+		{
+			AppendLine(preAppendLine);
+			m_indentionLevel += add;
+		}
+
 		// remaining MUST have room for m_indentionLevel characters, and span will be modified
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void MaybeIndent(ref Span<char> span)
 		{
-			if (m_column != 0)
+			if (m_lineHasIndention)
 				return;
 			var lvl = m_indentionLevel;
 			if (lvl == 0)
 				return;
 			s_tabs.AsSpan(0, lvl).CopyTo(m_buffer.AsSpan(m_length));
 			span = span.Slice(lvl);
+			m_lineHasIndention = true;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -102,17 +135,19 @@ namespace Lidgren.Core
 				return;
 			}
 
-			var len = str.Length + m_indentionLevel + 1;
+			var curLen = m_length;
+			var strLen = str.Length + m_indentionLevel;
 
-			EnsureCapacity(len);
-			var span = m_buffer.AsSpan(m_length, len);
+			EnsureCapacity(strLen + 2); // +2 for max newline size
+			var span = m_buffer.AsSpan(curLen, strLen + 2); // +2 for max newline size
 
 			MaybeIndent(ref span); // add indention
 			str.CopyTo(span); // add str
 			span = span.Slice(str.Length);
-			span[0] = '\n'; // add newline
-			m_length += len;
-			m_column = 0;
+			var nllen = NewLine(span);
+
+			m_length = curLen + strLen + nllen;
+			m_lineHasIndention = false;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -131,7 +166,6 @@ namespace Lidgren.Core
 			MaybeIndent(ref span); // add indention
 			str.CopyTo(span); // add str
 			m_length += len;
-			m_column = str.Length;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -143,7 +177,6 @@ namespace Lidgren.Core
 			MaybeIndent(ref span); // add indention
 			span[0] = c;
 			m_length += len;
-			m_column += 1;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -160,7 +193,6 @@ namespace Lidgren.Core
 
 			var actualLen = m_indentionLevel + written;
 			m_length += actualLen;
-			m_column += actualLen;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -177,7 +209,6 @@ namespace Lidgren.Core
 
 			var actualLen = m_indentionLevel + written;
 			m_length += actualLen;
-			m_column += actualLen;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -194,7 +225,6 @@ namespace Lidgren.Core
 
 			var actualLen = m_indentionLevel + written;
 			m_length += actualLen;
-			m_column += actualLen;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -211,7 +241,6 @@ namespace Lidgren.Core
 
 			var actualLen = m_indentionLevel + written;
 			m_length += actualLen;
-			m_column += actualLen;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -228,7 +257,6 @@ namespace Lidgren.Core
 
 			var actualLen = m_indentionLevel + written;
 			m_length += actualLen;
-			m_column += actualLen;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -245,7 +273,6 @@ namespace Lidgren.Core
 
 			var actualLen = m_indentionLevel + written;
 			m_length += actualLen;
-			m_column += actualLen;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -262,7 +289,6 @@ namespace Lidgren.Core
 
 			var actualLen = m_indentionLevel + written;
 			m_length += actualLen;
-			m_column += actualLen;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -279,7 +305,6 @@ namespace Lidgren.Core
 
 			var actualLen = m_indentionLevel + written;
 			m_length += actualLen;
-			m_column += actualLen;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -296,7 +321,6 @@ namespace Lidgren.Core
 
 			var actualLen = m_indentionLevel + written;
 			m_length += actualLen;
-			m_column += actualLen;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -313,7 +337,6 @@ namespace Lidgren.Core
 
 			var actualLen = m_indentionLevel + written;
 			m_length += actualLen;
-			m_column += actualLen;
 		}
 
 		/// <summary>
@@ -365,6 +388,7 @@ namespace Lidgren.Core
 					break;
 				Remove(idx, oldValue.Length);
 				Insert(idx, newValue);
+				retval++;
 			}
 			return retval;
 		}

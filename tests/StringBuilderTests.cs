@@ -21,26 +21,35 @@ namespace UnitTests
 				bdr.AppendLine("Worlds");
 				int numReplaced = bdr.Replace('e', 'u');
 				Assert.AreEqual(2, numReplaced);
-				Assert.AreEqual("Hullo World\nHullo 12 Worlds\n".Length, bdr.Length);
-				Assert.IsTrue(bdr.ReadOnlySpan.SequenceEqual("Hullo World\nHullo 12 Worlds\n"));
 
-				bdr.Replace("Hullo", "Hi");
-				Assert.IsTrue(bdr.ReadOnlySpan.SequenceEqual("Hi World\nHi 12 Worlds\n"));
+				var expected = "Hullo World" + Environment.NewLine + "Hullo 12 Worlds" + Environment.NewLine;
+				Assert.AreEqual(expected.Length, bdr.Length);
+				Assert.IsTrue(bdr.ReadOnlySpan.SequenceEqual(expected));
 
-				bdr.Replace("Hi ", "");
-				Assert.IsTrue(bdr.ReadOnlySpan.SequenceEqual("World\n12 Worlds\n"));
+				numReplaced = bdr.Replace("Hullo", "Hi");
+				Assert.AreEqual(2, numReplaced);
+				expected = expected.Replace("Hullo", "Hi");
+				Assert.IsTrue(bdr.ReadOnlySpan.SequenceEqual(expected));
+
+				numReplaced = bdr.Replace("Hi", "");
+				Assert.AreEqual(2, numReplaced);
+				expected = expected.Replace("Hi", "");
+				Assert.IsTrue(bdr.ReadOnlySpan.SequenceEqual(expected));
 
 				bdr.Replace("World", "World");
-				Assert.IsTrue(bdr.ReadOnlySpan.SequenceEqual("World\n12 Worlds\n"));
+				Assert.IsTrue(bdr.ReadOnlySpan.SequenceEqual(expected));
 				bdr.Replace("Florka", "--");
-				Assert.IsTrue(bdr.ReadOnlySpan.SequenceEqual("World\n12 Worlds\n"));
+				Assert.IsTrue(bdr.ReadOnlySpan.SequenceEqual(expected));
 				bdr.Replace("Florka", "Florka");
-				Assert.IsTrue(bdr.ReadOnlySpan.SequenceEqual("World\n12 Worlds\n"));
+				Assert.IsTrue(bdr.ReadOnlySpan.SequenceEqual(expected));
 
 				bdr.Clear();
+				Assert.AreEqual(0, bdr.Length);
+				Assert.AreEqual("", bdr.ToString());
 				bdr.Append("Koko");
-				Assert.AreEqual("Koko".Length, bdr.Length);
-				Assert.IsTrue(bdr.ReadOnlySpan.SequenceEqual("Koko"));
+				bdr.Append('s');
+				Assert.AreEqual("Kokos".Length, bdr.Length);
+				Assert.IsTrue(bdr.ReadOnlySpan.SequenceEqual("Kokos"));
 			}
 
 			{
@@ -53,26 +62,35 @@ namespace UnitTests
 				sbdr.AppendLine("Worlds");
 				var numReplaced = sbdr.Replace('e', 'u');
 				Assert.AreEqual(2, numReplaced);
-				Assert.AreEqual("Hullo World\nHullo 12 Worlds\n".Length, sbdr.Length);
-				Assert.IsTrue(sbdr.ReadOnlySpan.SequenceEqual("Hullo World\nHullo 12 Worlds\n"));
 
-				sbdr.Replace("Hullo", "Hi");
-				Assert.IsTrue(sbdr.ReadOnlySpan.SequenceEqual("Hi World\nHi 12 Worlds\n"));
+				var expected = "Hullo World" + Environment.NewLine + "Hullo 12 Worlds" + Environment.NewLine;
+				Assert.AreEqual(expected.Length, sbdr.Length);
+				Assert.IsTrue(sbdr.ReadOnlySpan.SequenceEqual(expected));
 
-				sbdr.Replace("Hi ", "");
-				Assert.IsTrue(sbdr.ReadOnlySpan.SequenceEqual("World\n12 Worlds\n"));
+				numReplaced = sbdr.Replace("Hullo", "Hi");
+				Assert.AreEqual(2, numReplaced);
+				expected = expected.Replace("Hullo", "Hi");
+				Assert.IsTrue(sbdr.ReadOnlySpan.SequenceEqual(expected));
+
+				numReplaced = sbdr.Replace("Hi", "");
+				Assert.AreEqual(2, numReplaced);
+				expected = expected.Replace("Hi", "");
+				Assert.IsTrue(sbdr.ReadOnlySpan.SequenceEqual(expected));
 
 				sbdr.Replace("World", "World");
-				Assert.IsTrue(sbdr.ReadOnlySpan.SequenceEqual("World\n12 Worlds\n"));
+				Assert.IsTrue(sbdr.ReadOnlySpan.SequenceEqual(expected));
 				sbdr.Replace("Florka", "--");
-				Assert.IsTrue(sbdr.ReadOnlySpan.SequenceEqual("World\n12 Worlds\n"));
+				Assert.IsTrue(sbdr.ReadOnlySpan.SequenceEqual(expected));
 				sbdr.Replace("Florka", "Florka");
-				Assert.IsTrue(sbdr.ReadOnlySpan.SequenceEqual("World\n12 Worlds\n"));
+				Assert.IsTrue(sbdr.ReadOnlySpan.SequenceEqual(expected));
 
 				sbdr.Clear();
+				Assert.AreEqual(0, sbdr.Length);
+				Assert.AreEqual("", sbdr.ToString());
 				sbdr.Append("Koko");
-				Assert.AreEqual("Koko".Length, sbdr.Length);
-				Assert.IsTrue(sbdr.ReadOnlySpan.SequenceEqual("Koko"));
+				sbdr.Append('s');
+				Assert.AreEqual("Kokos".Length, sbdr.Length);
+				Assert.IsTrue(sbdr.ReadOnlySpan.SequenceEqual("Kokos"));
 			}
 		}
 	}

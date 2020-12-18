@@ -16,178 +16,197 @@ namespace Lidgren.Core
 	/// </summary>
 	public ref struct FixedStringBuilder
 	{
-		private Span<char> m_buffer;
-		private int m_length;
+		private static readonly bool s_crlf = Environment.NewLine.Equals("\n", StringComparison.Ordinal) ? false : true;
 
-		public readonly int Length => m_length;
-		public readonly Span<char> Span => m_buffer.Slice(0, m_length);
-		public readonly ReadOnlySpan<char> ReadOnlySpan => m_buffer.Slice(0, m_length);
+		private Span<char> m_buffer;
+		private Span<char> m_remaining;
+		
+		public readonly int Length => m_buffer.Length - m_remaining.Length;
+		public readonly Span<char> Span => m_buffer.Slice(0, Length);
+		public readonly ReadOnlySpan<char> ReadOnlySpan => m_buffer.Slice(0, Length);
 
 		public FixedStringBuilder(Span<char> buffer)
 		{
 			m_buffer = buffer;
-			m_length = 0;
+			m_remaining = buffer;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Clear()
 		{
-			m_length = 0;
+			m_remaining = m_buffer;
+		}
+
+		// advances span
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private void NewLine(ref Span<char> span)
+		{
+			if (s_crlf)
+			{
+				span[0] = '\r';
+				span[1] = '\n';
+				span = span.Slice(2);
+				return;
+			}
+			span[0] = '\n';
+			span = span.Slice(1);
+		}
+
+		public void AppendLine()
+		{
+			NewLine(ref m_remaining);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void AppendLine(ReadOnlySpan<char> str)
 		{
-			var len = m_length;
-			var span = m_buffer.Slice(len);
-
-			str.CopyTo(span);
-			span[str.Length] = '\n';
-
-			m_length = len + str.Length + 1;
+			var rem = m_remaining;
+			str.CopyTo(rem);
+			rem = rem.Slice(str.Length);
+			NewLine(ref rem);
+			m_remaining = rem;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(ReadOnlySpan<char> str)
 		{
-			var len = m_length;
-			var span = m_buffer.Slice(len);
-			str.CopyTo(span);
-			m_length = len + str.Length;
+			str.CopyTo(m_remaining);
+			m_remaining = m_remaining.Slice(str.Length);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(char c)
 		{
-			m_buffer[m_length++] = c;
+			m_remaining[0] = c;
+			m_remaining = m_remaining.Slice(1);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(bool value)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written);
+			bool ok = value.TryFormat(m_remaining, out int written);
 			CoreException.Assert(ok);
-			m_length += written;
+			m_remaining = m_remaining.Slice(written);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(int value)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written);
+			bool ok = value.TryFormat(m_remaining, out int written);
 			CoreException.Assert(ok);
-			m_length += written;
+			m_remaining = m_remaining.Slice(written);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(uint value)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written);
+			bool ok = value.TryFormat(m_remaining, out int written);
 			CoreException.Assert(ok);
-			m_length += written;
+			m_remaining = m_remaining.Slice(written);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(long value)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written);
+			bool ok = value.TryFormat(m_remaining, out int written);
 			CoreException.Assert(ok);
-			m_length += written;
+			m_remaining = m_remaining.Slice(written);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(ulong value)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written);
+			bool ok = value.TryFormat(m_remaining, out int written);
 			CoreException.Assert(ok);
-			m_length += written;
+			m_remaining = m_remaining.Slice(written);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(float value)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written);
+			bool ok = value.TryFormat(m_remaining, out int written);
 			CoreException.Assert(ok);
-			m_length += written;
+			m_remaining = m_remaining.Slice(written);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(double value)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written);
+			bool ok = value.TryFormat(m_remaining, out int written);
 			CoreException.Assert(ok);
-			m_length += written;
+			m_remaining = m_remaining.Slice(written);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void AppendFormat(ReadOnlySpan<char> format, int value)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written, format: format);
+			bool ok = value.TryFormat(m_remaining, out int written, format: format);
 			CoreException.Assert(ok);
-			m_length += written;
+			m_remaining = m_remaining.Slice(written);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void AppendFormat(ReadOnlySpan<char> format, float value)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written, format: format);
+			bool ok = value.TryFormat(m_remaining, out int written, format: format);
 			CoreException.Assert(ok);
-			m_length += written;
+			m_remaining = m_remaining.Slice(written);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void AppendFormat(ReadOnlySpan<char> format, double value)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written, format: format);
+			bool ok = value.TryFormat(m_remaining, out int written, format: format);
 			CoreException.Assert(ok);
-			m_length += written;
+			m_remaining = m_remaining.Slice(written);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void AppendFormat(ReadOnlySpan<char> format, float value, IFormatProvider provider)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written, format: format, provider: provider);
+			bool ok = value.TryFormat(m_remaining, out int written, format: format, provider: provider);
 			CoreException.Assert(ok);
-			m_length += written;
+			m_remaining = m_remaining.Slice(written);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void AppendFormat(ReadOnlySpan<char> format, double value, IFormatProvider provider)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written, format: format, provider: provider);
+			bool ok = value.TryFormat(m_remaining, out int written, format: format, provider: provider);
 			CoreException.Assert(ok);
-			m_length += written;
+			m_remaining = m_remaining.Slice(written);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void AppendFormat(ReadOnlySpan<char> format, uint value)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written, format: format);
+			bool ok = value.TryFormat(m_remaining, out int written, format: format);
 			CoreException.Assert(ok);
-			m_length += written;
+			m_remaining = m_remaining.Slice(written);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void AppendFormat(ReadOnlySpan<char> format, ushort value)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written, format: format);
+			bool ok = value.TryFormat(m_remaining, out int written, format: format);
 			CoreException.Assert(ok);
-			m_length += written;
+			m_remaining = m_remaining.Slice(written);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void AppendFormat(ReadOnlySpan<char> format, ulong value)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written, format: format);
+			bool ok = value.TryFormat(m_remaining, out int written, format: format);
 			CoreException.Assert(ok);
-			m_length += written;
+			m_remaining = m_remaining.Slice(written);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void AppendFormat(ReadOnlySpan<char> format, byte value)
 		{
-			bool ok = value.TryFormat(m_buffer.Slice(m_length), out int written, format: format);
+			bool ok = value.TryFormat(m_remaining, out int written, format: format);
 			CoreException.Assert(ok);
-			m_length += written;
+			m_remaining = m_remaining.Slice(written);
 		}
 
 		/// <summary>
@@ -195,13 +214,13 @@ namespace Lidgren.Core
 		/// </summary>
 		public int Replace(char oldChar, char newChar)
 		{
+			var content = this.Span;
 			int retval = 0;
-			int len = m_length;
-			for (int i = 0; i < len; i++)
+			for (int i = 0; i < content.Length; i++)
 			{
-				if (m_buffer[i] == oldChar)
+				if (content[i] == oldChar)
 				{
-					m_buffer[i] = newChar;
+					content[i] = newChar;
 					retval++;
 				}
 			}
@@ -239,13 +258,15 @@ namespace Lidgren.Core
 					break;
 				Remove(idx, oldValue.Length);
 				Insert(idx, newValue);
+				retval++;
 			}
 			return retval;
 		}
 
 		public void Insert(int index, ReadOnlySpan<char> value)
 		{
-			if (index == m_length)
+			var curLen = this.Length;
+			if (index == curLen)
 			{
 				Append(value);
 				return;
@@ -255,7 +276,7 @@ namespace Lidgren.Core
 			{
 				this.ReadOnlySpan.CopyTo(m_buffer.Slice(value.Length));
 				value.CopyTo(m_buffer.Slice(0, value.Length));
-				m_length += value.Length;
+				m_remaining = m_buffer.Slice(curLen + value.Length);
 				return;
 			}
 
@@ -263,17 +284,18 @@ namespace Lidgren.Core
 			var tail = ReadOnlySpan.Slice(index);
 			tail.CopyTo(m_buffer.Slice(index + value.Length));
 			value.CopyTo(m_buffer.Slice(index));
-			m_length += value.Length;
+			m_remaining = m_buffer.Slice(curLen + value.Length);
 		}
 
-		public void Remove(int index, int length)
+		public void Remove(int index, int count)
 		{
-			int tail = m_length - (index + length);
+			int curLen = this.Length;
+			int tail = curLen - (index + count);
 			CoreException.Assert(tail >= 0);
-			m_length -= length;
+			m_remaining = m_buffer.Slice(curLen - count);
 			if (tail == 0)
 				return;
-			m_buffer.Slice(index + length, tail).CopyTo(m_buffer.Slice(index, tail));
+			m_buffer.Slice(index + count, tail).CopyTo(m_buffer.Slice(index, tail));
 		}
 
 		public override int GetHashCode()
