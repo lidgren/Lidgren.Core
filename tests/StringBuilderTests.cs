@@ -92,6 +92,29 @@ namespace UnitTests
 				Assert.AreEqual("Kokos".Length, sbdr.Length);
 				Assert.IsTrue(sbdr.ReadOnlySpan.SequenceEqual("Kokos"));
 			}
+			{
+				var sbdr = new ValueStringBuilder(8);
+				sbdr.AppendLine("Start");
+				sbdr.Indent("{", 1);
+				sbdr.AppendLine("Inside");
+				sbdr.Indent(1);
+				sbdr.AppendLine("Tabbed");
+				sbdr.AppendLine("Tabbed");
+				sbdr.AppendLine("Tabbed");
+				sbdr.Indent(-1);
+				sbdr.Indent(-1, "}");
+
+				var expected =
+					"Start" + Environment.NewLine +
+					"{" + Environment.NewLine +
+					"\tInside" + Environment.NewLine +
+					"\t\tTabbed" + Environment.NewLine +
+					"\t\tTabbed" + Environment.NewLine +
+					"\t\tTabbed" + Environment.NewLine +
+					"}" + Environment.NewLine;
+
+				Assert.AreEqual(expected, sbdr.ToString());
+			}
 		}
 	}
 }

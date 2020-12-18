@@ -123,7 +123,6 @@ namespace Lidgren.Core
 				AnsiColorCode(k_escapeBackgroundColor, hexBackgroundColor, ref work);
 
 			var code = buffer.Slice(0, buffer.Length - work.Length);
-			//var debug = code.ToString();
 
 			lock (s_lock)
 			{
@@ -133,26 +132,48 @@ namespace Lidgren.Core
 			}
 		}
 
+		/// <summary>
+		/// Writes to console with a particular foreground color and optionally background color
+		/// </summary>
+		public static void WriteAnsi(ReadOnlySpan<char> text, ReadOnlySpan<char> hexForegroundColor, ReadOnlySpan<char> hexBackgroundColor = default)
+		{
+			Span<char> buffer = stackalloc char[64];
+			Span<char> work = buffer;
+
+			// foreground
+			AnsiColorCode(k_escapeForegroundColor, hexForegroundColor, ref work);
+
+			if (hexBackgroundColor != default)
+				AnsiColorCode(k_escapeBackgroundColor, hexBackgroundColor, ref work);
+
+			var code = buffer.Slice(0, buffer.Length - work.Length);
+
+			lock (s_lock)
+			{
+				Console.Out.Write(code);
+				Console.Out.Write(text);
+				Console.Out.Write(k_escapeReset);
+			}
+		}
+
 		private static void AnsiColorCode(ReadOnlySpan<char> codePrefix, ReadOnlySpan<char> hexColor, ref Span<char> work)
 		{
-			if (hexColor.StartsWith("#"))
-				hexColor = hexColor.Slice(1);
-			var color = (uint)StringUtils.FromHex(hexColor);
+			var color = Color.FromHex(hexColor);
 			codePrefix.CopyTo(work);
 			work = work.Slice(codePrefix.Length);
 
 			// red
-			((color >> 16) & 255).TryFormat(work, out int written);
+			color.R.TryFormat(work, out int written);
 			work[written] = ';';
 			work = work.Slice(written + 1);
 
 			// green
-			((color >> 8) & 255).TryFormat(work, out written);
+			color.G.TryFormat(work, out written);
 			work[written] = ';';
 			work = work.Slice(written + 1);
 
 			// blue
-			(color & 255).TryFormat(work, out written);
+			color.B.TryFormat(work, out written);
 			work[written] = 'm';
 			work = work.Slice(written + 1);
 
