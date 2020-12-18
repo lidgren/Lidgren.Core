@@ -281,14 +281,7 @@ namespace Lidgren.Core
 			{
 				uint retval = (uint)2166136261u;
 				for (int i = 0; i < str.Length; i++)
-				{
 					retval = (retval ^ (uint)char.ToLower(str[i])) * 16777619;
-				}
-				retval += retval << 13;
-				retval ^= retval >> 7;
-				retval += retval << 3;
-				retval ^= retval >> 17;
-				retval += retval << 5;
 				return retval;
 			}
 		}
@@ -300,14 +293,7 @@ namespace Lidgren.Core
 			{
 				uint retval = (uint)2166136261u;
 				for (int i = 0; i < str.Length; i++)
-				{
 					retval = (retval ^ (uint)str[i]) * 16777619;
-				}
-				retval += retval << 13;
-				retval ^= retval >> 7;
-				retval += retval << 3;
-				retval ^= retval >> 17;
-				retval += retval << 5;
 				return retval;
 			}
 		}
@@ -319,14 +305,7 @@ namespace Lidgren.Core
 			{
 				uint retval = (uint)2166136261u;
 				for (int i = 0; i < data.Length; i++)
-				{
 					retval = (retval ^ (uint)data[i]) * 16777619;
-				}
-				retval += retval << 13;
-				retval ^= retval >> 7;
-				retval += retval << 3;
-				retval ^= retval >> 17;
-				retval += retval << 5;
 				return retval;
 			}
 		}
