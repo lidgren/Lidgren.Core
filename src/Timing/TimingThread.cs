@@ -27,7 +27,7 @@ namespace Lidgren.Core
 		private bool m_triggerFlushOnce;
 		private Thread m_thread;
 
-		public string Name => m_threadName == null ? string.Empty : m_threadName;
+		public string Name => m_threadName ?? "";
 		public Thread Thread => m_thread;
 		public int Index => m_threadIndex;
 

@@ -144,7 +144,7 @@ namespace Lidgren.Core
 				result[i] = items[order[i]];
 			result.AsSpan().CopyTo(items);
 
-			error = string.Empty;
+			error = "";
 			return true;
 		}
 
