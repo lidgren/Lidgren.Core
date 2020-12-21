@@ -24,6 +24,39 @@ namespace Lidgren.Core
 			m_entries = new Entry[initialCapacity];
 		}
 
+		//private bool Validate()
+		//{
+		//	var ok = PeekPriority(out var nextPrio);
+		//	if (ok)
+		//	{
+		//		for (int i = 0; i < m_count; i++)
+		//		{
+		//			ref var entry = ref m_entries[i];
+		//			if (entry.Prio.CompareTo(nextPrio) < 0)
+		//				return false;
+		//			// CoreException.Throw("Queue corrupt");
+		//
+		//			// check heapness
+		//			var left = (2 * i) + 1;
+		//			if (left < m_count)
+		//			{
+		//				// verify left child is larger or equal
+		//				if (m_entries[left].Prio.CompareTo(entry.Prio) < 0)
+		//					return false;
+		//			}
+		//
+		//			var right = (2 * i) + 2;
+		//			if (right < m_count)
+		//			{
+		//				// verify left child is larger or equal
+		//				if (m_entries[right].Prio.CompareTo(entry.Prio) < 0)
+		//					return false;
+		//			}
+		//		}
+		//	}
+		//	return true;
+		//}
+
 		/// <summary>
 		/// Enqueue an item with a certain priority
 		/// </summary>
@@ -137,28 +170,30 @@ namespace Lidgren.Core
 			retval = m_entries[0].Item;
 
 			int cnt = m_count - 1;
-			var root = m_entries[cnt];
+			var replacement = m_entries[cnt];
 			m_count = cnt;
+			if (cnt == 0)
+				return true;
 
 			// pull up
 			int index = 0;
-			for(; ;)
+			for (; ; )
 			{
-				var leftChild = index * 2 + 1;
-				if (leftChild >= cnt)
+				var leftChildIndex = index * 2 + 1;
+				if (leftChildIndex >= cnt)
 					break;
-				int rightChild = index * 2 + 2;
-				int swapIndex = rightChild < cnt && m_entries[rightChild].Prio.CompareTo(m_entries[leftChild].Prio) < 0 ? rightChild : leftChild;
+				int rightChildIndex = index * 2 + 2;
+				int swapIndex = rightChildIndex < cnt && m_entries[rightChildIndex].Prio.CompareTo(m_entries[leftChildIndex].Prio) < 0 ? rightChildIndex : leftChildIndex;
 
 				ref readonly var cmp = ref m_entries[swapIndex];
-				if (cmp.Prio.CompareTo(root.Prio) >= 0)
+				if (cmp.Prio.CompareTo(replacement.Prio) >= 0)
 					break;
+
 				m_entries[index] = cmp;
 				index = swapIndex;
 			}
 
-			if (cnt > 0)
-				m_entries[index] = root;
+			m_entries[index] = replacement;
 			return true;
 		}
 
@@ -190,27 +225,71 @@ namespace Lidgren.Core
 				return false;
 
 			int cnt = m_count - 1;
-			var root = m_entries[cnt];
 			m_count = cnt;
+			if (index == cnt)
+				return true; // just drop it off the end
 
-			// pull up
-			for (; ; )
+			if (cnt == 1)
 			{
-				var leftChild = index * 2 + 1;
-				if (leftChild >= cnt)
-					break;
-				int rightChild = index * 2 + 2;
-				int swapIndex = rightChild < cnt && m_entries[rightChild].Prio.CompareTo(m_entries[leftChild].Prio) < 0 ? rightChild : leftChild;
-
-				ref readonly var cmp = ref m_entries[swapIndex];
-				if (cmp.Prio.CompareTo(root.Prio) >= 0)
-					break;
-				m_entries[index] = cmp;
-				index = swapIndex;
+				// we removed top item
+				CoreException.Assert(index == 0);
+				m_entries[0] = m_entries[1];
+				return true;
 			}
 
-			if (cnt > 0)
-				m_entries[index] = root;
+			var replacement = m_entries[cnt];
+
+			while (index > 0)
+			{
+				// check parent for upwards travelling
+				var parentIndex = (index - 1) / 2;
+				ref readonly var parentEntry = ref m_entries[parentIndex];
+				if (replacement.Prio.CompareTo(parentEntry.Prio) < 0)
+				{
+					// need to swap up
+					m_entries[index] = parentEntry;
+					index = parentIndex;
+					continue; // loop back; may need to travel higher yet
+				}
+				break;
+			}
+
+			// ok, check children
+			for (; ; )
+			{
+				var leftChildIndex = index * 2 + 1;
+				if (leftChildIndex >= cnt)
+					break;
+				int rightChildIndex = index * 2 + 2;
+
+				ref readonly var leftChildEntry = ref m_entries[leftChildIndex];
+				if (rightChildIndex < cnt)
+				{
+					ref readonly var rightChildEntry = ref m_entries[rightChildIndex];
+					if (leftChildEntry.Prio.CompareTo(rightChildEntry.Prio) >= 0)
+					{
+						// right child is smaller
+						if (rightChildEntry.Prio.CompareTo(replacement.Prio) < 0)
+						{
+							m_entries[index] = rightChildEntry;
+							index = rightChildIndex;
+							continue;
+						}
+						break;
+					}
+				}
+
+				// left child is smaller
+				if (leftChildEntry.Prio.CompareTo(replacement.Prio) < 0)
+				{
+					m_entries[index] = leftChildEntry;
+					index = leftChildIndex;
+					continue;
+				}
+				break;
+			}
+
+			m_entries[index] = replacement;
 			return true;
 		}
 

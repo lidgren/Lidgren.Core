@@ -71,7 +71,7 @@ namespace UnitTests
 
 			var facit = new List<(int, string)>();
 			queue.Clear();
-			for(int op = 0; op < 10000; op++)
+			for(int op = 0; op < 1000000; op++)
 			{
 				switch (PRNG.Next(0, 8))
 				{
