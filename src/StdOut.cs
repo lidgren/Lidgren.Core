@@ -12,6 +12,12 @@ namespace Lidgren.Core
 		// Console is thread safe; but to ensure coloring is atomic we use a lock
 		private static readonly object s_lock = new object();
 
+		public static void Flush()
+		{
+			lock (s_lock)
+				Console.Out.Flush();
+		}
+
 		/// <summary>
 		/// Writes to console
 		/// </summary>
