@@ -10,7 +10,6 @@ namespace Lidgren.Core
 		public enum RunProcessResult
 		{
 			FailedToStartProcess,
-			NoSuchExecutableFile,
 			TimedOut,
 			ExitCodeZero,
 			ExitCodeNonZero
@@ -58,9 +57,6 @@ namespace Lidgren.Core
 			stdOut = "";
 			stdErr = "";
 			exitCode = -1;
-
-			if (File.Exists(executable) == false)
-				return RunProcessResult.NoSuchExecutableFile;
 
 			var process = new Process();
 			process.StartInfo.FileName = executable;
