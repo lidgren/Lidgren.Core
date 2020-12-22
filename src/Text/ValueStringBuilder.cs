@@ -79,12 +79,14 @@ namespace Lidgren.Core
 			return 1;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void AppendLine()
 		{
 			EnsureCapacity(2);
 			int len = m_length;
 			len += NewLine(m_buffer.AsSpan(len));
-			m_length = len; 
+			m_length = len;
+			m_lineHasIndention = false;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -138,7 +140,11 @@ namespace Lidgren.Core
 			var curLen = m_length;
 			var strLen = str.Length + m_indentionLevel;
 
-			EnsureCapacity(strLen + 2); // +2 for max newline size
+			//EnsureCapacity(strLen + 2); // +2 for max newline size
+			int ensureSize = strLen + 2; // +2 for max newline size
+			if (ensureSize > m_buffer.Length - m_length)
+				Grow(ensureSize);
+
 			var span = m_buffer.AsSpan(curLen, strLen + 2); // +2 for max newline size
 
 			MaybeIndent(ref span); // add indention
@@ -161,7 +167,9 @@ namespace Lidgren.Core
 			if (str.Length == 0)
 				return;
 			var len = str.Length + m_indentionLevel;
-			EnsureCapacity(len);
+			//EnsureCapacity(len);
+			if (len > m_buffer.Length - m_length)
+				Grow(len);
 			var span = m_buffer.AsSpan(m_length, len);
 			MaybeIndent(ref span); // add indention
 			str.CopyTo(span); // add str
@@ -177,6 +185,13 @@ namespace Lidgren.Core
 			MaybeIndent(ref span); // add indention
 			span[0] = c;
 			m_length += len;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void AppendLine(char c)
+		{
+			Append(c);
+			AppendLine();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -196,6 +211,13 @@ namespace Lidgren.Core
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void AppendLine(bool value)
+		{
+			Append(value);
+			AppendLine();
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(int value)
 		{
 			var maxLen = 12 + m_indentionLevel;
@@ -209,6 +231,13 @@ namespace Lidgren.Core
 
 			var actualLen = m_indentionLevel + written;
 			m_length += actualLen;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void AppendLine(int value)
+		{
+			Append(value);
+			AppendLine();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -228,6 +257,13 @@ namespace Lidgren.Core
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void AppendLine(uint value)
+		{
+			Append(value);
+			AppendLine();
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(byte value)
 		{
 			var maxLen = 12 + m_indentionLevel;
@@ -241,6 +277,13 @@ namespace Lidgren.Core
 
 			var actualLen = m_indentionLevel + written;
 			m_length += actualLen;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void AppendLine(byte value)
+		{
+			Append(value);
+			AppendLine();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -260,6 +303,13 @@ namespace Lidgren.Core
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void AppendLine(short value)
+		{
+			Append(value);
+			AppendLine();
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(ushort value)
 		{
 			var maxLen = 12 + m_indentionLevel;
@@ -273,6 +323,13 @@ namespace Lidgren.Core
 
 			var actualLen = m_indentionLevel + written;
 			m_length += actualLen;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void AppendLine(ushort value)
+		{
+			Append(value);
+			AppendLine();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -292,6 +349,13 @@ namespace Lidgren.Core
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void AppendLine(long value)
+		{
+			Append(value);
+			AppendLine();
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(ulong value)
 		{
 			var maxLen = 12 + m_indentionLevel;
@@ -305,6 +369,13 @@ namespace Lidgren.Core
 
 			var actualLen = m_indentionLevel + written;
 			m_length += actualLen;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void AppendLine(ulong value)
+		{
+			Append(value);
+			AppendLine();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -324,6 +395,13 @@ namespace Lidgren.Core
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void AppendLine(float value)
+		{
+			Append(value);
+			AppendLine();
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(double value)
 		{
 			var maxLen = 12 + m_indentionLevel;
@@ -337,6 +415,13 @@ namespace Lidgren.Core
 
 			var actualLen = m_indentionLevel + written;
 			m_length += actualLen;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public void AppendLine(double value)
+		{
+			Append(value);
+			AppendLine();
 		}
 
 		/// <summary>
