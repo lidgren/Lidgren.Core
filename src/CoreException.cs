@@ -47,6 +47,17 @@ namespace Lidgren.Core
 			}
 		}
 
+
+		/// <summary>
+		/// Throws an exception, in DEBUG AND RELEASE, if first parameter is false
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void FatalAssert(bool isOk, string message = "")
+		{
+			if (isOk == false)
+				CoreException.Throw(message);
+		}
+
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		public static void Throw(string? message = null, Exception? inner = null)
 		{

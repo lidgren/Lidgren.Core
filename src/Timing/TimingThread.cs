@@ -71,7 +71,10 @@ namespace Lidgren.Core
 			m_triggerFlushOnce = true;
 		}
 
-		internal void Init(int threadIndex, string? threadName = null)
+		/// <summary>
+		/// Only call manually when adding external or "virtual" thread such as a "GPU thread"
+		/// </summary>
+		public void Init(int threadIndex, string? threadName = null)
 		{
 			m_threadIndex = threadIndex;
 			if (string.IsNullOrWhiteSpace(threadName))

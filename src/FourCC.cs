@@ -2,6 +2,7 @@
 using System;
 using System.Buffers.Binary;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Lidgren.Core
@@ -50,6 +51,7 @@ namespace Lidgren.Core
 			Value = value;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void ToString(Span<char> into)
 		{
 			into[0] = (char)(Value & 255u);

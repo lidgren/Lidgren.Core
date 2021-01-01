@@ -22,7 +22,10 @@ namespace Lidgren.Core
 				s_listeners.Add(listener);
 		}
 
-		internal static int RegisterThread(TimingThread thread)
+		/// <summary>
+		/// Only call this manually when adding external or "virtual" threads such as "GPU thread" for profiling
+		/// </summary>
+		public static int RegisterThread(TimingThread thread)
 		{
 			lock (s_threads)
 			{
