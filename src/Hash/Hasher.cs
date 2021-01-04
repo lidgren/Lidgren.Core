@@ -25,6 +25,15 @@ namespace Lidgren.Core
 			return new Hasher(M);
 		}
 
+		public readonly Hasher Clone()
+		{
+			Hasher retval;
+			retval.m_hash = m_hash;
+			retval.m_unit = m_unit;
+			retval.m_bitCount = m_bitCount;
+			return retval;
+		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public Hasher(in ulong seed)
 		{
