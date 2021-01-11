@@ -269,7 +269,7 @@ namespace Lidgren.Core
 
 		public static uint DJBa2(ReadOnlySpan<byte> bytes)
 		{
-			uint hash = 5381;
+			uint hash = 5381u;
 			for (int i = 0; i < bytes.Length; i++)
 				hash = ((hash << 5) + hash) ^ bytes[i];
 			return hash;
@@ -279,9 +279,9 @@ namespace Lidgren.Core
 		{
 			unchecked
 			{
-				uint retval = (uint)2166136261u;
+				uint retval = 2166136261u;
 				for (int i = 0; i < str.Length; i++)
-					retval = (retval ^ (uint)char.ToLower(str[i])) * 16777619;
+					retval = (retval ^ (uint)char.ToLower(str[i])) * 16777619u;
 				return retval;
 			}
 		}
@@ -291,9 +291,21 @@ namespace Lidgren.Core
 		{
 			unchecked
 			{
-				uint retval = (uint)2166136261u;
+				uint retval = 2166136261u;
 				for (int i = 0; i < str.Length; i++)
-					retval = (retval ^ (uint)str[i]) * 16777619;
+					retval = (retval ^ (uint)str[i]) * 16777619u;
+				return retval;
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ulong FNV1a64(ReadOnlySpan<byte> data)
+		{
+			unchecked
+			{
+				ulong retval = 14695981039346656037ul;
+				for (int i = 0; i < data.Length; i++)
+					retval = (retval ^ data[i]) * 1099511628211ul;
 				return retval;
 			}
 		}
@@ -303,9 +315,9 @@ namespace Lidgren.Core
 		{
 			unchecked
 			{
-				uint retval = (uint)2166136261u;
+				uint retval = 2166136261u;
 				for (int i = 0; i < data.Length; i++)
-					retval = (retval ^ (uint)data[i]) * 16777619;
+					retval = (retval ^ (uint)data[i]) * 16777619u;
 				return retval;
 			}
 		}

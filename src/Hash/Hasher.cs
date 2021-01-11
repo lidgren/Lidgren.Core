@@ -315,14 +315,16 @@ namespace Lidgren.Core
 					// add full ulongs
 					ulong hash = m_hash;
 					var chunks = MemoryMarshal.Cast<byte, ulong>(data.Slice(0, fastBytes));
-					for (int i = 0; i < chunks.Length; i++)
+					CoreException.Assert(numChunks == chunks.Length);
+					while (chunks.Length > 0)
 					{
-						ulong bits = chunks[i];
+						ulong bits = chunks[0];
 						bits *= M;
 						bits ^= bits >> R;
 						bits *= M;
 						hash ^= bits;
 						hash *= M;
+						chunks = chunks.Slice(1);
 					}
 					m_hash = hash;
 				}
@@ -331,38 +333,32 @@ namespace Lidgren.Core
 				CoreException.Assert(m_bitCount == 0);
 
 				data = data.Slice(fastBytes);
-				CoreException.Assert(data.Length >= 0 && data.Length <= 7, "how?");
+				CoreException.Assert(data.Length >= 0 && data.Length <= 7);
+				m_bitCount = data.Length * 8;
 				switch (data.Length)
 				{
 					case 0:
 						return;
 					case 1:
 						m_unit = data[0];
-						m_bitCount = 8;
 						return;
 					case 2:
 						m_unit = data[0] | (ulong)data[1] << 8;
-						m_bitCount = 16;
 						return;
 					case 3:
 						m_unit = data[0] | (ulong)data[1] << 8 | (ulong)data[2] << 16;
-						m_bitCount = 24;
 						return;
 					case 4:
 						m_unit = data[0] | (ulong)data[1] << 8 | (ulong)data[2] << 16 | (ulong)data[3] << 24;
-						m_bitCount = 32;
 						return;
 					case 5:
 						m_unit = data[0] | (ulong)data[1] << 8 | (ulong)data[2] << 16 | (ulong)data[3] << 24 | (ulong)data[4] << 32;
-						m_bitCount = 40;
 						return;
 					case 6:
 						m_unit = data[0] | (ulong)data[1] << 8 | (ulong)data[2] << 16 | (ulong)data[3] << 24 | (ulong)data[4] << 32 | (ulong)data[5] << 40;
-						m_bitCount = 48;
 						return;
 					case 7:
 						m_unit = data[0] | (ulong)data[1] << 8 | (ulong)data[2] << 16 | (ulong)data[3] << 24 | (ulong)data[4] << 32 | (ulong)data[5] << 40 | (ulong)data[6] << 48;
-						m_bitCount = 56;
 						return;
 				}
 			}
@@ -377,24 +373,14 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveOptimization)]
 		public void Add(ReadOnlySpan<char> str)
 		{
-			if (str.Length < 1)
+			if (str.Length <= 0)
 			{
 				Add((byte)0);
 				return;
 			}
 
-			while (str.Length >= 4)
-			{
-				ulong val =
-					(ulong)str[0] |
-					((ulong)((ushort)str[1])) << 16 |
-					((ulong)((ushort)str[2])) << 32 |
-					((ulong)((ushort)str[3])) << 48;
-				Add(val);
-				str = str.Slice(4);
-			}
-			foreach (var c in str)
-				Add((ushort)c);
+			var bytes = MemoryMarshal.Cast<char, byte>(str);
+			Add(bytes);
 		}
 
 		public void AddStructBytes<T>(ref T item) where T : unmanaged
