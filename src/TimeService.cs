@@ -57,27 +57,36 @@ namespace Lidgren.Core
 		public static string CompactDuration(double seconds)
 		{
 			if (seconds <= 0.1)
-				return String.Format(CultureInfo.InvariantCulture, "{0:0.0}", seconds * 1000) + "ms";
+				return String.Format(CultureInfo.InvariantCulture, "{0:0.#}", seconds * 1000) + "ms";
 
 			if (seconds < 1.0)
 				return (int)(seconds * 1000) + "ms";
 
 			if (seconds < 60.0)
-				return String.Format(CultureInfo.InvariantCulture, "{0:0.00}", seconds) + "s";
+				return String.Format(CultureInfo.InvariantCulture, "{0:0.##}", seconds) + "s";
 
-			// 1m to 61m
+			// 1m to <60m
 			if (seconds < 60 * 60)
 			{
 				int mins = (int)(seconds / 60);
-				return string.Format(CultureInfo.InvariantCulture, "{0}m{1}s", mins, (int)(seconds - (mins * 60)));
+				seconds -= (mins * 60);
+				if (seconds == 0)
+					return string.Format(CultureInfo.InvariantCulture, "{0}m", mins);
+				return string.Format(CultureInfo.InvariantCulture, "{0}m{1:0.##}s", mins, seconds);
 			}
 
 			{
 				const double secondsInHour = 60 * 60;
 				int hrs = (int)(seconds / secondsInHour);
 				seconds -= (hrs * secondsInHour);
+				if (seconds == 0)
+					return string.Format(CultureInfo.InvariantCulture, "{0}h", hrs);
 				int mins = (int)(seconds / 60);
-				return string.Format(CultureInfo.InvariantCulture, "{0}h{0}m", hrs, mins);
+				seconds -= (mins * 60);
+				if (seconds == 0)
+					return string.Format(CultureInfo.InvariantCulture, "{0}h{1}m", hrs, mins);
+
+				return string.Format(CultureInfo.InvariantCulture, "{0}h{1}m{2:0.##}s", hrs, mins, seconds);
 			}
 		}
 
@@ -109,7 +118,7 @@ namespace Lidgren.Core
 		/// <summary>
 		/// Parse "1d8h4m10s100ms" to number of seconds
 		/// </summary>
-		public static bool ParseDuration(string str, out double seconds, string defaultTimeUnits = "s")
+		public static bool TryParseDuration(string str, out double seconds)
 		{
 			seconds = 0.0;
 
@@ -124,23 +133,28 @@ namespace Lidgren.Core
 				}
 			}
 			if (isAllDigits)
-				str += defaultTimeUnits;
+				return double.TryParse(str, out seconds);
 
 			int idx = 0;
 			while (idx < str.Length)
 			{
 				// get number
 				int n = idx;
-				while (n < str.Length && char.IsDigit(str[n]))
+				for(; ;)
+				{
+					if (n >= str.Length)
+						break;
+					var c = str[n];
+					if (char.IsDigit(c) == false && c != '.' && c != '-')
+						break;
 					n++;
+				}
 				if (n == idx || n >= str.Length)
-					break;
-
-				int iamount;
-				if (Int32.TryParse(str.AsSpan(idx, n - idx), out iamount) == false)
 					return false;
 
-				double amount = (double)iamount;
+				double amount;
+				if (double.TryParse(str.AsSpan(idx, n - idx), NumberStyles.Number, CultureInfo.InvariantCulture, out amount) == false)
+					return false;
 
 				// get unit
 				double multiplier;
@@ -203,29 +217,6 @@ namespace Lidgren.Core
 			if (seconds >= TimeSpan.MaxValue.TotalSeconds)
 				return DateTime.MaxValue;
 			return s_epoch + TimeSpan.FromSeconds(seconds);
-		}
-	}
-
-	// TODO: make ref struct when they support IDisposable
-	/// <summary>
-	/// Usage:  var timer = using(new SimpleTimer("mything"));
-	/// </summary>
-	public struct SimpleTimer : IDisposable
-	{
-		private long m_started;
-		private string m_name;
-
-		public SimpleTimer(string name)
-		{
-			m_name = name;
-			m_started = Stopwatch.GetTimestamp();
-		}
-
-		public void Dispose()
-		{
-			var str = m_name + " took " + TimeService.Measure(m_started);
-			StdOut.WriteLine(str);
-			Trace.WriteLine(str);
 		}
 	}
 }

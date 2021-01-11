@@ -87,18 +87,5 @@ namespace UnitTests
 			span.SwapBlocks(3);
 			Assert.AreEqual("4123", span.ToString());
 		}
-
-		[TestMethod]
-		public void TestTimeServiceDuration()
-		{
-			var ok = TimeService.ParseDuration("3h2m12s", out var seconds);
-
-			var facit = (3 * 60 * 60);
-			facit += (2 * 60);
-			facit += 12;
-
-			Assert.IsTrue(ok);
-			Assert.AreEqual(facit, seconds);
-		}
 	}
 }
