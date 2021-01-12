@@ -64,8 +64,10 @@ namespace Lidgren.Core
 		[Conditional("DEBUG")]
 		private void VerifyIndex(int index)
 		{
+#if DEBUG
 			if (index < 0 || index >= m_exactSize)
 				CoreException.Throw("Index out of range");
+#endif
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
