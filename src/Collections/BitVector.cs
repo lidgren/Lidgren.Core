@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime;
 using System.Runtime.CompilerServices;
@@ -6,7 +7,7 @@ using System.Runtime.CompilerServices;
 namespace Lidgren.Core
 {
 	/// <summary>
-	/// Arbitrarily long bit vector
+	/// Fixed arbitrarily long bit vector; range verification only done in DEBUG
 	/// </summary>
 	public sealed class BitVector
 	{
@@ -17,10 +18,17 @@ namespace Lidgren.Core
 		private ulong[] m_data;
 		public ulong[] Data => m_data;
 
-		public BitVector(int minCapacity = c_bitsPerUnit)
+#if DEBUG
+		private int m_exactSize;
+#endif
+
+		public BitVector(int size)
 		{
-			int numUnits = UnitsToHoldBits(minCapacity);
+			int numUnits = UnitsToHoldBits(size);
 			m_data = new ulong[numUnits];
+#if DEBUG
+			m_exactSize = size;
+#endif
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -53,9 +61,17 @@ namespace Lidgren.Core
 				m_data.AsSpan().Clear();
 		}
 
+		[Conditional("DEBUG")]
+		private void VerifyIndex(int index)
+		{
+			if (index < 0 || index >= m_exactSize)
+				CoreException.Throw("Index out of range");
+		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool Get(int index)
 		{
+			VerifyIndex(index);
 			int dataIndex = index >> c_unitBitCount;
 			ulong value = m_data[dataIndex];
 			int bitIndex = index & c_bitsMask;
@@ -65,6 +81,7 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Flip(int index)
 		{
+			VerifyIndex(index);
 			int dataIndex = index >> c_unitBitCount;
 			int bitIndex = index & c_bitsMask;
 			ulong mask = 1ul << bitIndex;
@@ -77,6 +94,7 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Set(int index)
 		{
+			VerifyIndex(index);
 			int dataIndex = index >> c_unitBitCount;
 			int bitIndex = index & c_bitsMask;
 			ulong mask = 1ul << bitIndex;
@@ -89,6 +107,7 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Clear(int index)
 		{
+			VerifyIndex(index);
 			int dataIndex = index >> c_unitBitCount;
 			int bitIndex = index & c_bitsMask;
 			ulong mask = 1ul << bitIndex;
@@ -98,6 +117,7 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Set(int index, bool value)
 		{
+			VerifyIndex(index);
 			int dataIndex = index >> c_unitBitCount;
 			int bitIndex = index & c_bitsMask;
 			ulong mask = 1ul << bitIndex;

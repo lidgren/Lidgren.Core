@@ -44,9 +44,9 @@ namespace Lidgren.Core
 
 		public int Count { get { return m_count; } }
 
-		public FastDictionary(int minCapacity = 64)
+		public FastDictionary(int initialCapacity = 64)
 		{
-			int capacity = MathUtils.NextPowerOfTwo(minCapacity);
+			int capacity = MathUtils.NextPowerOfTwo(initialCapacity);
 
 			m_lookup = new int[capacity];
 			m_capacityMinusOne = capacity - 1;
