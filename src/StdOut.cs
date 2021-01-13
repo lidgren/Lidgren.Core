@@ -104,7 +104,7 @@ namespace Lidgren.Core
 					Span<char> buffer = stackalloc char[64];
 					Span<char> work = buffer;
 
-					AnsiColorCode(k_escapeBackgroundColor, hexBackgroundColor, ref work);
+					AppendAnsiColorCode(k_escapeBackgroundColor, hexBackgroundColor, ref work);
 					var code = buffer.Slice(0, buffer.Length - work.Length);
 
 					Console.Out.Write(code);
@@ -112,6 +112,37 @@ namespace Lidgren.Core
 
 				Console.Out.Write(k_escapeClearScreen);
 			}
+		}
+
+		/// <summary>
+		/// Creates a string with prefixed ansi color codes and postfixed with reset code
+		/// </summary>
+		public static string AnsiColor(ReadOnlySpan<char> text, ReadOnlySpan<char> hexForegroundColor, ReadOnlySpan<char> hexBackgroundColor = default)
+		{
+			Span<char> buffer = stackalloc char[256];
+			Span<char> work = buffer;
+
+			int resetLen = k_escapeReset.Length;
+
+			// foreground
+			AppendAnsiColorCode(k_escapeForegroundColor, hexForegroundColor, ref work);
+
+			if (hexBackgroundColor != default)
+				AppendAnsiColorCode(k_escapeBackgroundColor, hexBackgroundColor, ref work);
+
+			int codeLen = buffer.Length - work.Length;
+
+			if (work.Length >= text.Length + resetLen)
+			{
+				// fits in stack allocation
+				text.CopyTo(work.Slice(0, text.Length));
+				k_escapeReset.AsSpan().CopyTo(work.Slice(text.Length, resetLen));
+				return new string(buffer.Slice(0, codeLen + text.Length + resetLen));
+			}
+
+			var code = buffer.Slice(0, codeLen);
+
+			return code.ToString() + text.ToString() + k_escapeReset;
 		}
 
 		/// <summary>
@@ -123,10 +154,10 @@ namespace Lidgren.Core
 			Span<char> work = buffer;
 
 			// foreground
-			AnsiColorCode(k_escapeForegroundColor, hexForegroundColor, ref work);
+			AppendAnsiColorCode(k_escapeForegroundColor, hexForegroundColor, ref work);
 
 			if (hexBackgroundColor != default)
-				AnsiColorCode(k_escapeBackgroundColor, hexBackgroundColor, ref work);
+				AppendAnsiColorCode(k_escapeBackgroundColor, hexBackgroundColor, ref work);
 
 			var code = buffer.Slice(0, buffer.Length - work.Length);
 
@@ -147,10 +178,10 @@ namespace Lidgren.Core
 			Span<char> work = buffer;
 
 			// foreground
-			AnsiColorCode(k_escapeForegroundColor, hexForegroundColor, ref work);
+			AppendAnsiColorCode(k_escapeForegroundColor, hexForegroundColor, ref work);
 
 			if (hexBackgroundColor != default)
-				AnsiColorCode(k_escapeBackgroundColor, hexBackgroundColor, ref work);
+				AppendAnsiColorCode(k_escapeBackgroundColor, hexBackgroundColor, ref work);
 
 			var code = buffer.Slice(0, buffer.Length - work.Length);
 
@@ -162,7 +193,7 @@ namespace Lidgren.Core
 			}
 		}
 
-		private static void AnsiColorCode(ReadOnlySpan<char> codePrefix, ReadOnlySpan<char> hexColor, ref Span<char> work)
+		private static void AppendAnsiColorCode(ReadOnlySpan<char> codePrefix, ReadOnlySpan<char> hexColor, ref Span<char> work)
 		{
 			var color = Color.FromHex(hexColor);
 			codePrefix.CopyTo(work);
