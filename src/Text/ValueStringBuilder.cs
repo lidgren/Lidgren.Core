@@ -118,7 +118,7 @@ namespace Lidgren.Core
 			var lvl = m_indentionLevel;
 			if (lvl == 0)
 				return;
-			s_tabs.AsSpan(0, lvl).CopyTo(m_buffer.AsSpan(m_length));
+			s_tabs.AsSpan(0, lvl).CopyTo(span.Slice(0, lvl));
 			span = span.Slice(lvl);
 			m_lineHasIndention = true;
 		}
