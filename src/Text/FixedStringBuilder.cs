@@ -52,6 +52,7 @@ namespace Lidgren.Core
 			span = span.Slice(1);
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void AppendLine()
 		{
 			NewLine(ref m_remaining);
@@ -268,7 +269,9 @@ namespace Lidgren.Core
 			var curLen = this.Length;
 			if (index == curLen)
 			{
-				Append(value);
+				// just append
+				value.CopyTo(m_remaining);
+				m_remaining = m_remaining.Slice(value.Length);
 				return;
 			}
 

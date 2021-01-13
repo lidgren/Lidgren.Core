@@ -6,20 +6,13 @@ using System.Runtime.CompilerServices;
 namespace Lidgren.Core
 {
 	/// <summary>
-	/// Replacement for StringBuilder with differences:
-	/// 1. It's a value type
-	/// 2. It takes spans
-	/// 3. Has indentation support
+	/// Replacement for StringBuilder but it's a value type and takes spans
 	/// </summary>
 	public struct ValueStringBuilder
 	{
 		private static readonly bool s_crlf = Environment.NewLine.Equals("\n", StringComparison.Ordinal) ? false : true;
-		private static readonly string s_tabs = "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t";
 		private char[] m_buffer;
 		private int m_length;
-
-		private bool m_lineHasIndention;
-		private int m_indentionLevel;
 
 		public readonly int Length => m_length;
 		public readonly Span<char> Span => m_buffer.AsSpan(0, m_length);
@@ -29,15 +22,11 @@ namespace Lidgren.Core
 		{
 			m_buffer = new char[initialCapacity];
 			m_length = 0;
-			m_lineHasIndention = false;
-			m_indentionLevel = 0;
 		}
 
 		public void Clear()
 		{
 			m_length = 0;
-			m_lineHasIndention = false;
-			m_indentionLevel = 0;
 		}
 
 		public int Capacity
@@ -52,16 +41,16 @@ namespace Lidgren.Core
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private void EnsureCapacity(int len)
+		private void EnsureCapacity(int add)
 		{
-			if (len > m_buffer.Length - m_length)
-				Grow(len);
+			if (add > m_buffer.Length - m_length)
+				Grow(add);
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		private void Grow(int len)
+		private void Grow(int add)
 		{
-			int newSize = Math.Max(m_length + len, m_buffer.Length * 2);
+			int newSize = Math.Max(m_length + add, m_buffer.Length * 2);
 			Capacity = newSize;
 		}
 
@@ -82,45 +71,11 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void AppendLine()
 		{
-			EnsureCapacity(2);
+			if (m_buffer.Length - m_length < 2)
+				Grow(8);
 			int len = m_length;
 			len += NewLine(m_buffer.AsSpan(len));
 			m_length = len;
-			m_lineHasIndention = false;
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Indent(int add)
-		{
-			m_indentionLevel += add;
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Indent(int add, string postAppendLine)
-		{
-			m_indentionLevel += add;
-			AppendLine(postAppendLine);
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Indent(string preAppendLine, int add)
-		{
-			AppendLine(preAppendLine);
-			m_indentionLevel += add;
-		}
-
-		// remaining MUST have room for m_indentionLevel characters, and span will be modified
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private void MaybeIndent(ref Span<char> span)
-		{
-			if (m_lineHasIndention)
-				return;
-			var lvl = m_indentionLevel;
-			if (lvl == 0)
-				return;
-			s_tabs.AsSpan(0, lvl).CopyTo(span.Slice(0, lvl));
-			span = span.Slice(lvl);
-			m_lineHasIndention = true;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -138,22 +93,16 @@ namespace Lidgren.Core
 			}
 
 			var curLen = m_length;
-			var strLen = str.Length + m_indentionLevel;
 
-			//EnsureCapacity(strLen + 2); // +2 for max newline size
-			int ensureSize = strLen + 2; // +2 for max newline size
+			int ensureSize = str.Length + 2; // +2 for max newline size
 			if (ensureSize > m_buffer.Length - m_length)
 				Grow(ensureSize);
 
-			var span = m_buffer.AsSpan(curLen, strLen + 2); // +2 for max newline size
-
-			MaybeIndent(ref span); // add indention
-			str.CopyTo(span); // add str
+			var span = m_buffer.AsSpan(curLen);
+			str.CopyTo(span);
 			span = span.Slice(str.Length);
 			var nllen = NewLine(span);
-
-			m_length = curLen + strLen + nllen;
-			m_lineHasIndention = false;
+			m_length = curLen + str.Length + nllen;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -166,25 +115,17 @@ namespace Lidgren.Core
 		{
 			if (str.Length == 0)
 				return;
-			var len = str.Length + m_indentionLevel;
-			//EnsureCapacity(len);
-			if (len > m_buffer.Length - m_length)
-				Grow(len);
-			var span = m_buffer.AsSpan(m_length, len);
-			MaybeIndent(ref span); // add indention
-			str.CopyTo(span); // add str
-			m_length += len;
+			EnsureCapacity(str.Length);
+			var span = m_buffer.AsSpan(m_length);
+			str.CopyTo(span);
+			m_length += str.Length;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(char c)
 		{
-			var len = 1 + m_indentionLevel;
-			EnsureCapacity(len);
-			var span = m_buffer.AsSpan(m_length, len);
-			MaybeIndent(ref span); // add indention
-			span[0] = c;
-			m_length += len;
+			EnsureCapacity(1);
+			m_buffer[m_length++] = c;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -197,17 +138,10 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(bool value)
 		{
-			var maxLen = 5 + m_indentionLevel;
-			EnsureCapacity(maxLen);
-
-			var span = m_buffer.AsSpan(m_length, maxLen);
-			MaybeIndent(ref span); // add indention
-
-			bool ok = value.TryFormat(span, out int written);
+			EnsureCapacity(5);
+			bool ok = value.TryFormat(m_buffer.AsSpan(m_length), out int written);
 			CoreException.Assert(ok);
-
-			var actualLen = m_indentionLevel + written;
-			m_length += actualLen;
+			m_length += written;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -220,17 +154,10 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(int value)
 		{
-			var maxLen = 12 + m_indentionLevel;
-			EnsureCapacity(maxLen);
-
-			var span = m_buffer.AsSpan(m_length, maxLen);
-			MaybeIndent(ref span); // add indention
-
-			bool ok = value.TryFormat(span, out int written);
+			EnsureCapacity(12);
+			bool ok = value.TryFormat(m_buffer.AsSpan(m_length), out int written);
 			CoreException.Assert(ok);
-
-			var actualLen = m_indentionLevel + written;
-			m_length += actualLen;
+			m_length += written;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -243,17 +170,10 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(uint value)
 		{
-			var maxLen = 12 + m_indentionLevel;
-			EnsureCapacity(maxLen);
-
-			var span = m_buffer.AsSpan(m_length, maxLen);
-			MaybeIndent(ref span); // add indention
-
-			bool ok = value.TryFormat(span, out int written);
+			EnsureCapacity(12);
+			bool ok = value.TryFormat(m_buffer.AsSpan(m_length), out int written);
 			CoreException.Assert(ok);
-
-			var actualLen = m_indentionLevel + written;
-			m_length += actualLen;
+			m_length += written;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -266,17 +186,10 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(byte value)
 		{
-			var maxLen = 12 + m_indentionLevel;
-			EnsureCapacity(maxLen);
-
-			var span = m_buffer.AsSpan(m_length, maxLen);
-			MaybeIndent(ref span); // add indention
-
-			bool ok = value.TryFormat(span, out int written);
+			EnsureCapacity(4);
+			bool ok = value.TryFormat(m_buffer.AsSpan(m_length), out int written);
 			CoreException.Assert(ok);
-
-			var actualLen = m_indentionLevel + written;
-			m_length += actualLen;
+			m_length += written;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -289,17 +202,10 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(short value)
 		{
-			var maxLen = 12 + m_indentionLevel;
-			EnsureCapacity(maxLen);
-
-			var span = m_buffer.AsSpan(m_length, maxLen);
-			MaybeIndent(ref span); // add indention
-
-			bool ok = value.TryFormat(span, out int written);
+			EnsureCapacity(7);
+			bool ok = value.TryFormat(m_buffer.AsSpan(m_length), out int written);
 			CoreException.Assert(ok);
-
-			var actualLen = m_indentionLevel + written;
-			m_length += actualLen;
+			m_length += written;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -312,17 +218,10 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(ushort value)
 		{
-			var maxLen = 12 + m_indentionLevel;
-			EnsureCapacity(maxLen);
-
-			var span = m_buffer.AsSpan(m_length, maxLen);
-			MaybeIndent(ref span); // add indention
-
-			bool ok = value.TryFormat(span, out int written);
+			EnsureCapacity(6);
+			bool ok = value.TryFormat(m_buffer.AsSpan(m_length), out int written);
 			CoreException.Assert(ok);
-
-			var actualLen = m_indentionLevel + written;
-			m_length += actualLen;
+			m_length += written;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -335,17 +234,10 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(long value)
 		{
-			var maxLen = 12 + m_indentionLevel;
-			EnsureCapacity(maxLen);
-
-			var span = m_buffer.AsSpan(m_length, maxLen);
-			MaybeIndent(ref span); // add indention
-
-			bool ok = value.TryFormat(span, out int written);
+			EnsureCapacity(22);
+			bool ok = value.TryFormat(m_buffer.AsSpan(m_length), out int written);
 			CoreException.Assert(ok);
-
-			var actualLen = m_indentionLevel + written;
-			m_length += actualLen;
+			m_length += written;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -358,17 +250,10 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(ulong value)
 		{
-			var maxLen = 12 + m_indentionLevel;
-			EnsureCapacity(maxLen);
-
-			var span = m_buffer.AsSpan(m_length, maxLen);
-			MaybeIndent(ref span); // add indention
-
-			bool ok = value.TryFormat(span, out int written);
+			EnsureCapacity(22);
+			bool ok = value.TryFormat(m_buffer.AsSpan(m_length), out int written);
 			CoreException.Assert(ok);
-
-			var actualLen = m_indentionLevel + written;
-			m_length += actualLen;
+			m_length += written;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -381,17 +266,10 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(float value)
 		{
-			var maxLen = 12 + m_indentionLevel;
-			EnsureCapacity(maxLen);
-
-			var span = m_buffer.AsSpan(m_length, maxLen);
-			MaybeIndent(ref span); // add indention
-
-			bool ok = value.TryFormat(span, out int written);
+			EnsureCapacity(24);
+			bool ok = value.TryFormat(m_buffer.AsSpan(m_length), out int written);
 			CoreException.Assert(ok);
-
-			var actualLen = m_indentionLevel + written;
-			m_length += actualLen;
+			m_length += written;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -404,17 +282,10 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Append(double value)
 		{
-			var maxLen = 12 + m_indentionLevel;
-			EnsureCapacity(maxLen);
-
-			var span = m_buffer.AsSpan(m_length, maxLen);
-			MaybeIndent(ref span); // add indention
-
-			bool ok = value.TryFormat(span, out int written);
+			EnsureCapacity(24);
+			bool ok = value.TryFormat(m_buffer.AsSpan(m_length), out int written);
 			CoreException.Assert(ok);
-
-			var actualLen = m_indentionLevel + written;
-			m_length += actualLen;
+			m_length += written;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -429,13 +300,13 @@ namespace Lidgren.Core
 		/// </summary>
 		public int Replace(char oldChar, char newChar)
 		{
+			var content = this.Span;
 			int retval = 0;
-			int len = m_length;
-			for (int i = 0; i < len; i++)
+			for (int i = 0; i < content.Length; i++)
 			{
-				if (m_buffer[i] == oldChar)
+				if (content[i] == oldChar)
 				{
-					m_buffer[i] = newChar;
+					content[i] = newChar;
 					retval++;
 				}
 			}
@@ -448,7 +319,7 @@ namespace Lidgren.Core
 		public int Replace(string oldValue, string newValue)
 		{
 			int retval = 0;
-			
+
 			if (oldValue.Length == newValue.Length)
 			{
 				// in-place replacement
