@@ -16,6 +16,29 @@ namespace UnitTests
 			TestSplit("hello   this   is   a   string", ' ');
 			TestSplit("  hello this is a string  ", ' ');
 			TestSplit("    ", ' ');
+
+
+			var str = "split-on,multiple things";
+			var t = new Tokenizer<char>(str);
+
+			var ok = t.GetNext("-, ".AsSpan(), out var token);
+			Assert.IsTrue(ok);
+			Assert.IsTrue(token.SequenceEqual("split"));
+
+			ok = t.GetNext("-, ".AsSpan(), out token);
+			Assert.IsTrue(ok);
+			Assert.IsTrue(token.SequenceEqual("on"));
+
+			ok = t.GetNext("-, ".AsSpan(), out token);
+			Assert.IsTrue(ok);
+			Assert.IsTrue(token.SequenceEqual("multiple"));
+
+			ok = t.GetNext("-, ".AsSpan(), out token);
+			Assert.IsTrue(ok);
+			Assert.IsTrue(token.SequenceEqual("things"));
+
+			ok = t.GetNext("-, ".AsSpan(), out token);
+			Assert.IsFalse(ok);
 		}
 
 		private void TestSplit(string str, char delimiter)

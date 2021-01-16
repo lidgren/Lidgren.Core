@@ -57,7 +57,7 @@ namespace UnitTests
 				sbdr.AppendLine("Hello World");
 				sbdr.Append("Hello");
 				sbdr.Append(' ');
-				sbdr.Append(12);
+				sbdr.Append(12u);
 				sbdr.Append(' ');
 				sbdr.AppendLine("Worlds");
 				var numReplaced = sbdr.Replace('e', 'u');

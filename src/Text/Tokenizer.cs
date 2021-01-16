@@ -41,15 +41,43 @@ namespace Lidgren.Core
 		{
 			int idx = m_currentIndex;
 
-			if (idx > m_all.Length)
+			var all = m_all;
+			if (idx > all.Length)
 				return default(ReadOnlySpan<T>);
 
-			var all = m_all;
 			for (; ; )
 			{
-				if (idx >= m_all.Length)
+				if (idx >= all.Length)
 					break;
 				if (all[idx].Equals(delimiter))
+					break;
+				idx++;
+			}
+			var token = all.Slice(m_currentIndex, idx - m_currentIndex);
+			m_currentIndex = idx + 1;
+			return token;
+		}
+
+		/// <summary>
+		/// Follows same rules as string.Split(delimiters)
+		/// </summary>
+		public ReadOnlySpan<T> Next(ReadOnlySpan<T> delimiters)
+		{
+			int idx = m_currentIndex;
+
+			var all = m_all;
+			if (idx > all.Length)
+				return default(ReadOnlySpan<T>);
+
+			for (; ; )
+			{
+				if (idx >= all.Length)
+					break;
+
+				bool got = false;
+				for (int i = 0; i < delimiters.Length; i++)
+					got |= all[idx].Equals(delimiters[i]);
+				if (got)
 					break;
 				idx++;
 			}
@@ -64,13 +92,14 @@ namespace Lidgren.Core
 		public ReadOnlySpan<T> PeekNext(T delimiter)
 		{
 			int idx = m_currentIndex;
-			if (idx > m_all.Length)
-				return default(ReadOnlySpan<T>);
 
 			var all = m_all;
+			if (idx > all.Length)
+				return default(ReadOnlySpan<T>);
+
 			for (; ; )
 			{
-				if (idx >= m_all.Length)
+				if (idx >= all.Length)
 					break;
 				if (all[idx].Equals(delimiter))
 					break;
@@ -87,7 +116,8 @@ namespace Lidgren.Core
 		{
 			int idx = m_currentIndex;
 
-			if (idx > m_all.Length)
+			var all = m_all;
+			if (idx > all.Length)
 			{
 				token = default(ReadOnlySpan<T>);
 				return false;
@@ -95,13 +125,43 @@ namespace Lidgren.Core
 
 			for (; ; )
 			{
-				if (idx >= m_all.Length)
+				if (idx >= all.Length)
 					break;
-				if (m_all[idx].Equals(delimiter))
+				if (all[idx].Equals(delimiter))
 					break;
 				idx++;
 			}
-			token = m_all.Slice(m_currentIndex, idx - m_currentIndex);
+			token = all.Slice(m_currentIndex, idx - m_currentIndex);
+			m_currentIndex = idx + 1;
+			return true;
+		}
+
+		/// <summary>
+		/// Follows same rules as string.Split(delimiter)
+		/// </summary>
+		public bool GetNext(ReadOnlySpan<T> delimiters, out ReadOnlySpan<T> token)
+		{
+			int idx = m_currentIndex;
+
+			var all = m_all;
+			if (idx > all.Length)
+			{
+				token = default(ReadOnlySpan<T>);
+				return false;
+			}
+
+			for (; ; )
+			{
+				if (idx >= all.Length)
+					break;
+				bool got = false;
+				for (int i = 0; i < delimiters.Length; i++)
+					got |= all[idx].Equals(delimiters[i]);
+				if (got)
+					break;
+				idx++;
+			}
+			token = all.Slice(m_currentIndex, idx - m_currentIndex);
 			m_currentIndex = idx + 1;
 			return true;
 		}
