@@ -311,6 +311,30 @@ namespace Lidgren.Core
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ulong FNV1a64(ReadOnlySpan<char> str)
+		{
+			unchecked
+			{
+				ulong retval = 14695981039346656037ul;
+				for (int i = 0; i < str.Length; i++)
+					retval = (retval ^ (uint)str[i]) * 1099511628211ul;
+				return retval;
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ulong FNV1a64Lower(ReadOnlySpan<char> str)
+		{
+			unchecked
+			{
+				ulong retval = 14695981039346656037ul;
+				for (int i = 0; i < str.Length; i++)
+					retval = (retval ^ (uint)char.ToLower(str[i])) * 1099511628211ul;
+				return retval;
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static uint FNV1a(ReadOnlySpan<byte> data)
 		{
 			unchecked
