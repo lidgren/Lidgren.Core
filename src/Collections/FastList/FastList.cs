@@ -69,6 +69,7 @@ namespace Lidgren.Core
 			var buffer = m_buffer;
 			var off = m_offset;
 			var cnt = m_count;
+			// TODO: compare to aliased Span.CopyTo
 			for (int i = 0; i < cnt; i++)
 				buffer[i] = buffer[off + i];
 			m_offset = 0;

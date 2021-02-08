@@ -299,5 +299,40 @@ namespace UnitTests
 			Assert.IsTrue(odd.Contains(7));
 			Assert.IsTrue(odd.Contains(9));
 		}
+
+		[TestMethod]
+		public void TestInsertRange()
+		{
+			var tmp = new List<uint>(32);
+			var tmpArr = new uint[32];
+
+			for (int run = 0; run < 10000; run++)
+			{
+				var cap = PRNG.Next(2, 7);
+				var fast = new FastList<uint>(cap);
+				var list = new List<uint>(cap);
+
+				var numOps = PRNG.Next(2, 4);
+				for (int o = 0; o < numOps; o++)
+				{
+					tmp.Clear();
+					var tmpLen = PRNG.Next(1, 9);
+					for (int n = 0; n < tmpLen; n++)
+						tmp.Add(PRNG.NextUInt32());
+
+					var insIdx = list.Count == 0 ? 0 : PRNG.Next(0, list.Count);
+
+					// go!
+					tmp.CopyTo(tmpArr);
+					fast.InsertRange(insIdx, tmpArr.AsSpan(0, tmpLen));
+					list.InsertRange(insIdx, tmp);
+
+					// verify
+					Assert.AreEqual(list.Count, fast.Count);
+					for (int v = 0; v < list.Count; v++)
+						Assert.AreEqual(list[v], fast[v]);
+				}
+			}
+		}
 	}
 }

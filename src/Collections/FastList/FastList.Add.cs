@@ -10,9 +10,11 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		private T[] Grow(int minAddCount)
 		{
-			// Don't grow by doubling; rationale: for huge growth EnsureCapacity should be called or good initialCapacity exists
+			// Don't grow by doubling; only by +50% of current
+			// Downside: need to trust user to call EnsureCapacity and use initialCapacity wisely for good perf
+			// Upside: less memory waste
 			int bufLen = m_buffer.Length;
-			int newSize = Math.Max(bufLen + bufLen / 2, m_count + minAddCount);
+			int newSize = 4 + Math.Max(bufLen + bufLen / 2, m_count + minAddCount);
 			var old = this.ReadOnlySpan;
 			var newBuffer = new T[newSize];
 			old.CopyTo(newBuffer);
@@ -188,7 +190,64 @@ namespace Lidgren.Core
 
 		public void InsertRange(int index, ReadOnlySpan<T> items)
 		{
-			throw new NotImplementedException();
+			var buf = m_buffer;
+			var count = m_count;
+			if (count + items.Length > buf.Length)
+			{
+				// need to allocate memory to fit
+				InsertRange_Allocate(index, items);
+				return;
+			}
+
+			if (m_offset + count + items.Length > buf.Length)
+				Compact(); // need to compact to fit
+
+			// ok, we should fit in current size/offset
+
+			// push tail
+			var tailLen = count - index;
+			if (tailLen > 0)
+			{
+				var tail = buf.AsSpan(m_offset + index, tailLen);
+				var tailDst = buf.AsSpan(m_offset + index + items.Length, tailLen);
+				tail.CopyTo(tailDst);
+			}
+
+			// insert
+			items.CopyTo(buf.AsSpan(m_offset + index, items.Length));
+			m_count = count + items.Length;
+		}
+
+		// InsertRange() when we need to reallocate entire array
+		private void InsertRange_Allocate(int index, ReadOnlySpan<T> items)
+		{
+			var oldBuffer = m_buffer;
+			var count = m_count;
+			int oldLen = oldBuffer.Length;
+			int newSize = 4 + Math.Max(oldLen + oldLen / 2, count + items.Length);
+			var newBuffer = new T[newSize];
+
+			// pre
+			if (index > 0)
+			{
+				var pre = oldBuffer.AsSpan(m_offset, index);
+				pre.CopyTo(newBuffer.AsSpan(0, index));
+			}
+
+			// insert
+			items.CopyTo(newBuffer.AsSpan(index, items.Length));
+
+			// tail
+			var tailLen = count - index;
+			if (tailLen > 0)
+			{
+				var tail = oldBuffer.AsSpan(m_offset + index, tailLen);
+				tail.CopyTo(newBuffer.AsSpan(index + items.Length, tailLen));
+			}
+
+			m_buffer = newBuffer;
+			m_offset = 0;
+			m_count = count + items.Length;
 		}
 
 		/// <summary>
