@@ -11,6 +11,8 @@ namespace Lidgren.Core
 	/// </summary>
 	public static class PRNG
 	{
+		private const ulong c_star = 0x2545F4914F6CDD1Dul;
+
 		/// <summary>
 		/// This is not thread local data by design because that would be slower in the general case
 		/// Whenever concurrency might occur; use the ref state overloads with a local variable instead
@@ -30,7 +32,7 @@ namespace Lidgren.Core
 				x ^= x << 25;
 				x ^= x >> 27;
 				state = x;
-				return x * 0x2545F4914F6CDD1D;
+				return x * c_star;
 			}
 		}
 
@@ -46,7 +48,7 @@ namespace Lidgren.Core
 				x ^= x << 25;
 				x ^= x >> 27;
 				s_state = x;
-				return x * 0x2545F4914F6CDD1D;
+				return x * c_star;
 			}
 		}
 
@@ -63,7 +65,7 @@ namespace Lidgren.Core
 				x ^= x << 25;
 				x ^= x >> 27;
 				state = x;
-				return (uint)((x * 0x2545F4914F6CDD1D) >> 32); // use upper bits
+				return (uint)((x * c_star) >> 32); // use upper bits
 			}
 		}
 
@@ -79,7 +81,7 @@ namespace Lidgren.Core
 				x ^= x << 25;
 				x ^= x >> 27;
 				s_state = x;
-				return (uint)((x * 0x2545F4914F6CDD1D) >> 32); // use upper bits
+				return (uint)((x * c_star) >> 32); // use upper bits
 			}
 		}
 
@@ -96,7 +98,7 @@ namespace Lidgren.Core
 				x ^= x << 25;
 				x ^= x >> 27;
 				state = x;
-				return (x * 0x2545F4914F6CDD1D) > 0x7FFFFFFFFFFFFFFFul;
+				return (x * c_star) > 0x7FFFFFFFFFFFFFFFul;
 			}
 		}
 
@@ -112,7 +114,7 @@ namespace Lidgren.Core
 				x ^= x << 25;
 				x ^= x >> 27;
 				s_state = x;
-				return (x * 0x2545F4914F6CDD1D) > 0x7FFFFFFFFFFFFFFFul;
+				return (x * c_star) > 0x7FFFFFFFFFFFFFFFul;
 			}
 		}
 
@@ -172,7 +174,7 @@ namespace Lidgren.Core
 					x ^= x << 25;
 					x ^= x >> 27;
 					state = x;
-					ulongs[i] = x * 0x2545F4914F6CDD1D;
+					ulongs[i] = x * c_star;
 				}
 
 				int offset = full * 8;
@@ -194,7 +196,7 @@ namespace Lidgren.Core
 				state = x;
 
 				// lemire fastrange
-				ulong rnd = (x * 0x2545F4914F6CDD1D) >> 32; // use upper bits
+				ulong rnd = (x * c_star) >> 32; // use upper bits
 				ulong span = (ulong)((long)maxValue - (long)minValue);
 				uint offset = (uint)((rnd * span) >> 32);
 				var retval = (int)(minValue + offset);
@@ -349,6 +351,20 @@ namespace Lidgren.Core
 			float azimuth = ((NextFloat(ref state) * 2.0f - 1.0f) * 0.5f + 0.5f) * 2.0f * MathF.PI;
 			x = MathF.Cos(azimuth) * m;
 			y = MathF.Sin(azimuth) * m;
+			z = dz;
+		}
+
+		/// <summary>
+		/// Returns random point on sphere, unit length
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void NextUnitSphereDoublePrecision(ref ulong state, out double x, out double y, out double z)
+		{
+			double dz = NextDouble(ref state) * 2.0 - 1.0;
+			double m = Math.Sqrt(1.0 - dz * dz);
+			double azimuth = ((NextDouble(ref state) * 2.0 - 1.0) * 0.5 + 0.5) * 2.0 * Math.PI;
+			x = Math.Cos(azimuth) * m;
+			y = Math.Sin(azimuth) * m;
 			z = dz;
 		}
 

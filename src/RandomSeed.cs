@@ -8,19 +8,9 @@ namespace Lidgren.Core
 	public static class RandomSeed
 	{
 		private static volatile int s_seedIncrement = 997;
-		private static readonly Random s_systemRandom = new Random();
 
-		/// <summary>
-		/// Generates a 32 bit random seed by combining various factors that are very hard to predict
-		/// </summary>
-		public static uint GetUInt32()
-		{
-			unchecked
-			{
-				var value = GetUInt64();
-				return (uint)value ^ (uint)(value >> 32);
-			}
-		}
+		// default seed for Random() is Environment.TickCount... but we can do better.
+		private static readonly Random s_systemRandom = new Random((int)HashUtil.XorFold64To32((ulong)Stopwatch.GetTimestamp()));
 
 		/// <summary>
 		/// Generates a 64 bit random seed by combining various factors that are very hard to predict
@@ -43,12 +33,28 @@ namespace Lidgren.Core
 				value ^= (rndLow ^ rndHigh);
 
 				// add time as source of randomness as well
-				value ^= (((ulong)Environment.TickCount << 32) ^ (ulong)Stopwatch.GetTimestamp());
+				value ^= (((ulong)Environment.TickCount << 30) ^ (ulong)Stopwatch.GetTimestamp());
 
 				// ensure rapid invocations differ
 				value ^= ((ulong)Interlocked.Add(ref s_seedIncrement, s_seedIncrement) * 7199369ul);
 
+				// make sure at least ONE bit is set to ensure the seed is never zero
+				// which is a very problematic numbers for some PRNGs
+				value |= (1ul << (int)(value & 63));
+
 				return value;
+			}
+		}
+
+		/// <summary>
+		/// Generates a 32 bit random seed by combining various factors that are very hard to predict
+		/// </summary>
+		public static uint GetUInt32()
+		{
+			unchecked
+			{
+				var value = GetUInt64();
+				return (uint)value ^ (uint)(value >> 32);
 			}
 		}
 
