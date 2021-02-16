@@ -7,6 +7,7 @@ Goals are:
 * No reflection
 * Heap allocation free whenever possible
 * Simple and self explanatory
+* Everything thoroughly unit tested
 
 Non-goals are:
 * Compatibility with older frameworks
