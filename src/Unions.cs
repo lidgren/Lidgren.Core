@@ -7,7 +7,7 @@ namespace Lidgren.Core
 	/// Utility struct for writing Singles
 	/// </summary>
 	[StructLayout(LayoutKind.Explicit)]
-	public struct SingleUIntUnion
+	public ref struct SingleUIntUnion
 	{
 		/// <summary>
 		/// Value as a 32 bit float
@@ -26,7 +26,7 @@ namespace Lidgren.Core
 	/// Utility struct for writing Singles
 	/// </summary>
 	[StructLayout(LayoutKind.Explicit)]
-	public struct SinglesULongUnion
+	public ref struct SinglesULongUnion
 	{
 		[FieldOffset(0)]
 		public float SingleValue0;
@@ -44,7 +44,7 @@ namespace Lidgren.Core
 	/// Utility struct for writing Singles
 	/// </summary>
 	[StructLayout(LayoutKind.Explicit, Pack = 1)]
-	public struct SingleBytesUnion
+	public ref struct SingleBytesUnion
 	{
 		/// <summary>
 		/// Value as a 32 bit float
@@ -63,7 +63,7 @@ namespace Lidgren.Core
 	}
 
 	[StructLayout(LayoutKind.Explicit)]
-	public struct DoubleULongUnion
+	public ref struct DoubleULongUnion
 	{
 		/// <summary>
 		/// Value as a 64 bit double
