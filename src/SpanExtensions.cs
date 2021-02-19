@@ -188,7 +188,7 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void WriteSingle(ref this Span<byte> span, float value)
 		{
-#if NET5_0
+#if NET5_0_OR_GREATER
 			BinaryPrimitives.WriteSingleLittleEndian(span, value);
 			span = span.Slice(4);
 #else
@@ -205,7 +205,7 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static float ReadSingle(ref this ReadOnlySpan<byte> span)
 		{
-#if NET5_0
+#if NET5_0_OR_GREATER
 			var retval = BinaryPrimitives.ReadSingleLittleEndian(span);
 			span = span.Slice(4);
 			return retval;
@@ -223,7 +223,7 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void WriteDouble(ref this Span<byte> span, double value)
 		{
-#if NET5_0
+#if NET5_0_OR_GREATER
 			BinaryPrimitives.WriteDoubleLittleEndian(span, value);
 			span = span.Slice(8);
 #else
@@ -240,7 +240,7 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static double ReadDouble(ref this ReadOnlySpan<byte> span)
 		{
-#if NET5_0
+#if NET5_0_OR_GREATER
 			var retval = BinaryPrimitives.ReadDoubleLittleEndian(span);
 			span = span.Slice(8);
 			return retval;
