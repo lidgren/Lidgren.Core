@@ -1,4 +1,5 @@
 ﻿#nullable enable
+//#define SPLITMIX64
 using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -11,7 +12,7 @@ namespace Lidgren.Core
 	/// </summary>
 	public static class PRNG
 	{
-		private const ulong c_star = 0x2545F4914F6CDD1Dul;
+		private const ulong c_star = 0x2545F4914F6CDD1Dul; // 2685821657736338717
 
 		/// <summary>
 		/// This is not thread local data by design because that would be slower in the general case
@@ -27,29 +28,31 @@ namespace Lidgren.Core
 		{
 			unchecked
 			{
+#if SPLITMIX64
+				state += 0x9e3779b97f4a7c15ul;
+				ulong z = state;
+				z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9;
+				z = (z ^ (z >> 27)) * 0x94d049bb133111eb;
+				return z ^ (z >> 31);
+#else
 				var x = state;
 				x ^= x >> 12;
 				x ^= x << 25;
 				x ^= x >> 27;
 				state = x;
 				return x * c_star;
+#endif
 			}
 		}
+
 
 		/// <summary>
 		/// Returns random value between 0 and UInt64.MaxValue using XorShift64*
 		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ulong NextUInt64()
 		{
-			unchecked
-			{
-				var x = s_state;
-				x ^= x >> 12;
-				x ^= x << 25;
-				x ^= x >> 27;
-				s_state = x;
-				return x * c_star;
-			}
+			return NextUInt64(ref s_state);
 		}
 
 		/// <summary>
@@ -58,31 +61,18 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static uint NextUInt32(ref ulong state)
 		{
-			unchecked
-			{
-				var x = state;
-				x ^= x >> 12;
-				x ^= x << 25;
-				x ^= x >> 27;
-				state = x;
-				return (uint)((x * c_star) >> 32); // use upper bits
-			}
+			var value = NextUInt64(ref state);
+			return (uint)(value >> 32); // use upper bits
 		}
 
 		/// <summary>
 		/// Returns random value between 0 and UInt32.MaxValue
 		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static uint NextUInt32()
 		{
-			unchecked
-			{
-				var x = s_state;
-				x ^= x >> 12;
-				x ^= x << 25;
-				x ^= x >> 27;
-				s_state = x;
-				return (uint)((x * c_star) >> 32); // use upper bits
-			}
+			var value = NextUInt64(ref s_state);
+			return (uint)(value >> 32); // use upper bits
 		}
 
 		/// <summary>
@@ -91,31 +81,16 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool NextBool(ref ulong state)
 		{
-			unchecked
-			{
-				var x = state;
-				x ^= x >> 12;
-				x ^= x << 25;
-				x ^= x >> 27;
-				state = x;
-				return (x * c_star) > 0x7FFFFFFFFFFFFFFFul;
-			}
+			return NextUInt64(ref state) > 0x7FFFFFFFFFFFFFFFul;
 		}
 
 		/// <summary>
 		/// Returns true or false randomly
 		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool NextBool()
 		{
-			unchecked
-			{
-				var x = s_state;
-				x ^= x >> 12;
-				x ^= x << 25;
-				x ^= x >> 27;
-				s_state = x;
-				return (x * c_star) > 0x7FFFFFFFFFFFFFFFul;
-			}
+			return NextUInt64(ref s_state) > 0x7FFFFFFFFFFFFFFFul;
 		}
 
 		private static ulong s_bools = 0;
