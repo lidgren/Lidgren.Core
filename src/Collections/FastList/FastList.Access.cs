@@ -128,14 +128,14 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Sort()
 		{
-#if NET5_0
+#if NET5_0_OR_GREATER
 			this.Span.Sort();
 #else
 			Array.Sort<T>(m_buffer, m_offset, m_count);
 #endif
 		}
 
-#if NET5_0
+#if NET5_0_OR_GREATER
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Sort(Comparison<T> comparison)
 		{
@@ -146,7 +146,7 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Sort(IComparer<T> comparer)
 		{
-#if NET5_0
+#if NET5_0_OR_GREATER
 			this.Span.Sort(comparer);
 #else
 			Array.Sort<T>(m_buffer, m_offset, m_count, comparer);
