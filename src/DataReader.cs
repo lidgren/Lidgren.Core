@@ -153,8 +153,7 @@ namespace Lidgren.Core
 		{
 			if (m_remaining.Length < into.Length)
 				Fill();
-			var src = m_remaining.ReadBytes(into.Length);
-			src.CopyTo(into);
+			m_remaining.ReadBytes(into);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

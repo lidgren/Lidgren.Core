@@ -13,7 +13,7 @@ namespace UnitTests
 		[TestMethod]
 		public void TestJobServiceMore()
 		{
-			const float runFor = 5.0f; // run for this many seconds
+			const float runFor = 4.0f; // run for this many seconds
 			const int simultaneousTests = 10;
 
 			JobService.Initialize();

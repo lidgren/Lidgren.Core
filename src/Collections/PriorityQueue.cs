@@ -62,15 +62,20 @@ namespace Lidgren.Core
 		/// </summary>
 		public void Enqueue(TPriority prio, TItem item)
 		{
+			var entries = m_entries;
+
 			var cnt = m_count;
-			if (cnt >= m_entries.Length)
+			if (cnt >= entries.Length)
+			{
 				Array.Resize(ref m_entries, cnt * 2);
+				entries = m_entries;
+			}
 
 			Entry entry;
 			entry.Prio = prio;
 			entry.Item = item;
 
-			m_entries[cnt] = entry;
+			entries[cnt] = entry;
 			int idx = cnt;
 			cnt++;
 			m_count = cnt;
@@ -79,15 +84,15 @@ namespace Lidgren.Core
 			while (idx > 0)
 			{
 				int parentIndex = (idx - 1) >> 1;
-				ref readonly var parent = ref m_entries[parentIndex];
+				ref readonly var parent = ref entries[parentIndex];
 				if (parent.Prio.CompareTo(prio) <= 0)
 					break;
-				m_entries[idx] = parent;
+				entries[idx] = parent;
 				idx = parentIndex;
 			}
 
 			if (cnt > 0)
-				m_entries[idx] = entry;
+				entries[idx] = entry;
 		}
 
 		/// <summary>

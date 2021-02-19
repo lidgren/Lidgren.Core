@@ -11,7 +11,7 @@ namespace UnitTests
 		[TestMethod]
 		public void TestPRNG()
 		{
-			const int iterations = 10000000;
+			const int iterations = 5000000;
 			Console.WriteLine();
 
 			int trues = 0;
