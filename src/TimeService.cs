@@ -17,6 +17,9 @@ namespace Lidgren.Core
 
 		private readonly static DateTime s_epoch;
 
+		/// <summary>
+		/// Wall time in seconds since TimeService was initialized
+		/// </summary>
 		public static double Wall { get { return (double)(Stopwatch.GetTimestamp() - s_timeInitialized) * s_dInvFreq; } }
 
 		public static int TicksPerSecond { get { return s_iFreq; } }
@@ -90,7 +93,7 @@ namespace Lidgren.Core
 			}
 		}
 
-		public static string TicksToTimeString(long tickCount)
+		public static string TicksToCompactDuration(long tickCount)
 		{
 			return CompactDuration((double)(tickCount * s_dInvFreq));
 		}
@@ -210,7 +213,7 @@ namespace Lidgren.Core
 		}
 
 		/// <summary>
-		/// Seconds since 1970-01-01
+		/// Pass seconds since 1970-01-01
 		/// </summary>
 		public static DateTime FromEpochSeconds(double seconds)
 		{
