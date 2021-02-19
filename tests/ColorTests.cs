@@ -36,7 +36,7 @@ namespace UnitTests
 			Assert.AreEqual(0x11, col.B);
 			Assert.AreEqual(0x77, col.A);
 
-			Color.Generate(0.5f);
+			Color.Random(0.5f);
 
 			var c1 = Color.FromHex("#FFA50033");
 			var c2 = new Color(255, 165, 0, 51);

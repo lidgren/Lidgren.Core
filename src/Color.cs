@@ -226,7 +226,7 @@ namespace Lidgren.Core
 		/// <summary>
 		/// Generate a random color
 		/// </summary>
-		public static Color Generate(float saturation = 0.95f)
+		public static Color Random(float saturation = 0.95f)
 		{
 			var hue = PRNG.NextFloat();
 			double r, g, b;
@@ -237,7 +237,7 @@ namespace Lidgren.Core
 		/// <summary>
 		/// Generate x colors which are as far apart as possible
 		/// </summary>
-		public static void GenerateMultiple(Span<Color> output, float saturation = 0.95f)
+		public static void RandomMultiple(Span<Color> output, float saturation = 0.95f)
 		{
 			for (int i = 0; i < output.Length; i++)
 			{
