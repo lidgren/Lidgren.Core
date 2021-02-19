@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.IO;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -220,6 +221,42 @@ namespace Lidgren.Core
 			m_remaining = rem;
 
 			return retval;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public Vector2 ReadVector2()
+		{
+			if (m_remaining.Length < 8)
+				Fill();
+			return new Vector2(
+				m_remaining.ReadSingle(),
+				m_remaining.ReadSingle()
+			);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public Vector3 ReadVector3()
+		{
+			if (m_remaining.Length < 12)
+				Fill();
+			return new Vector3(
+				m_remaining.ReadSingle(),
+				m_remaining.ReadSingle(),
+				m_remaining.ReadSingle()
+			);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public Vector4 ReadVector4()
+		{
+			if (m_remaining.Length < 16)
+				Fill();
+			return new Vector4(
+				m_remaining.ReadSingle(),
+				m_remaining.ReadSingle(),
+				m_remaining.ReadSingle(),
+				m_remaining.ReadSingle()
+			);
 		}
 	}
 }

@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Buffers;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -213,6 +214,39 @@ namespace Lidgren.Core
 		{
 			var into = Allocate(Unsafe.SizeOf<T>());
 			MemoryMarshal.Write<T>(into, ref value);
+		}
+
+		public void WriteVector2(in Vector2 value)
+		{
+			var into = Allocate(8);
+			var xslice = into.Slice(0, 4);
+			xslice.WriteSingle(value.X);
+			var yslice = into.Slice(4, 4);
+			yslice.WriteSingle(value.Y);
+		}
+
+		public void WriteVector3(in Vector3 value)
+		{
+			var into = Allocate(12);
+			var xslice = into.Slice(0, 4);
+			xslice.WriteSingle(value.X);
+			var yslice = into.Slice(4, 4);
+			yslice.WriteSingle(value.Y);
+			var zslice = into.Slice(8, 4);
+			zslice.WriteSingle(value.Z);
+		}
+
+		public void WriteVector4(in Vector4 value)
+		{
+			var into = Allocate(16);
+			var xslice = into.Slice(0, 4);
+			xslice.WriteSingle(value.X);
+			var yslice = into.Slice(4, 4);
+			yslice.WriteSingle(value.Y);
+			var zslice = into.Slice(8, 4);
+			zslice.WriteSingle(value.Z);
+			var wslice = into.Slice(12, 4);
+			wslice.WriteSingle(value.W);
 		}
 	}
 }

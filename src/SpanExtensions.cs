@@ -370,5 +370,70 @@ namespace Lidgren.Core
 			return retval;
 		}
 
+		/// <summary>
+		/// Reads Vector2 reduces span to remaining data
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Vector2 ReadVector2(ref this ReadOnlySpan<byte> data)
+		{
+#if NET5_0_OR_GREATER
+			Vector2 retval;
+			retval.X = BinaryPrimitives.ReadSingleLittleEndian(data);
+			retval.Y = BinaryPrimitives.ReadSingleLittleEndian(data.Slice(4));
+			data = data.Slice(8);
+			return retval;
+#else
+			Vector2 retval;
+			retval.X = data.ReadSingle();
+			retval.Y = data.ReadSingle();
+			return retval;
+#endif
+		}
+
+		/// <summary>
+		/// Reads Vector3 reduces span to remaining data
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Vector3 ReadVector3(ref this ReadOnlySpan<byte> data)
+		{
+#if NET5_0_OR_GREATER
+			Vector3 retval;
+			retval.X = BinaryPrimitives.ReadSingleLittleEndian(data);
+			retval.Y = BinaryPrimitives.ReadSingleLittleEndian(data.Slice(4));
+			retval.Z = BinaryPrimitives.ReadSingleLittleEndian(data.Slice(8));
+			data = data.Slice(12);
+			return retval;
+#else
+			Vector3 retval;
+			retval.X = data.ReadSingle();
+			retval.Y = data.ReadSingle();
+			retval.Z = data.ReadSingle();
+			return retval;
+#endif
+		}
+
+		/// <summary>
+		/// Reads Vector4 reduces span to remaining data
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Vector4 ReadVector4(ref this ReadOnlySpan<byte> data)
+		{
+#if NET5_0_OR_GREATER
+			Vector4 retval;
+			retval.X = BinaryPrimitives.ReadSingleLittleEndian(data);
+			retval.Y = BinaryPrimitives.ReadSingleLittleEndian(data.Slice(4));
+			retval.Z = BinaryPrimitives.ReadSingleLittleEndian(data.Slice(8));
+			retval.W = BinaryPrimitives.ReadSingleLittleEndian(data.Slice(12));
+			data = data.Slice(16);
+			return retval;
+#else
+			Vector4 retval;
+			retval.X = data.ReadSingle();
+			retval.Y = data.ReadSingle();
+			retval.Z = data.ReadSingle();
+			retval.W = data.ReadSingle();
+			return retval;
+#endif
+		}
 	}
 }
