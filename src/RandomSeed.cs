@@ -24,25 +24,34 @@ namespace Lidgren.Core
 				Guid.NewGuid().TryWriteBytes(span);
 				ulong guidLow = BinaryPrimitives.ReadUInt64LittleEndian(span);
 				ulong guidHigh = BinaryPrimitives.ReadUInt64LittleEndian(span.Slice(8));
-				ulong value = guidLow ^ guidHigh;
+				ulong v1 = guidLow ^ guidHigh;
 
 				// xor bits from system random
 				s_systemRandom.NextBytes(span);
 				ulong rndLow = BinaryPrimitives.ReadUInt64LittleEndian(span);
 				ulong rndHigh = BinaryPrimitives.ReadUInt64LittleEndian(span.Slice(8));
-				value ^= (rndLow ^ rndHigh);
+				ulong v2 = (rndLow ^ rndHigh);
 
 				// add time as source of randomness as well
-				value ^= (((ulong)Environment.TickCount << 30) ^ (ulong)Stopwatch.GetTimestamp());
+				v1 ^= (((ulong)Environment.TickCount << 30) ^ (ulong)Stopwatch.GetTimestamp());
 
 				// ensure rapid invocations differ
-				value ^= ((ulong)Interlocked.Add(ref s_seedIncrement, s_seedIncrement) * 7199369ul);
+				v2 ^= ((ulong)Interlocked.Add(ref s_seedIncrement, s_seedIncrement) * 7199369ul);
+
+#if NET5_0_OR_GREATER
+				// add processid in case multiple process is running concurrently
+				v1 ^= (ulong)Environment.ProcessId << 16;
+#endif
+
+				// merge results
+				ulong result = v1 ^ v2;
 
 				// make sure at least ONE bit is set to ensure the seed is never zero
 				// which is a very problematic numbers for some PRNGs
-				value |= (1ul << (int)(value & 63));
+				if (result == 0)
+					return GetUInt64();
 
-				return value;
+				return result;
 			}
 		}
 
