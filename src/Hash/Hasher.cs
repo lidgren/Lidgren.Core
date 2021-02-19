@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Buffers.Binary;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -441,6 +442,14 @@ namespace Lidgren.Core
 				// bitcount remains the same since we added a full 64 bit value
 				m_unit = (data >> (64 - bc));
 			}
+		}
+
+		/// <summary>
+		/// Use this if the data you've added so far aligns to 64 bits
+		/// </summary>
+		public void AddAligned64(ulong data)
+		{
+			Consume(data);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

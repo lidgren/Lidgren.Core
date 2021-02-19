@@ -77,17 +77,29 @@ namespace Lidgren.Core
 			return hasher.Finalize64();
 		}
 
+		public static ulong Hash64(ulong value)
+		{
+			// MurmurHash3 finalizer
+			value ^= value >> 33;
+			value *= 0xff51afd7ed558ccd;
+			value ^= value >> 33;
+			value *= 0xc4ceb9fe1a85ec53;
+			value ^= value >> 33;
+			return value;
+		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ulong Hash64(float x, float y)
 		{
-			var hasher = Hasher.Create();
 			SingleUIntUnion union;
 			union.UIntValue = 0;
+
 			union.SingleValue = x;
-			hasher.Add(union.UIntValue);
+			ulong input1 = union.UIntValue;
 			union.SingleValue = y;
-			hasher.Add(union.UIntValue);
-			return hasher.Finalize64();
+			input1 |= (union.UIntValue << 32);
+
+			return Hash64(input1);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -96,48 +108,42 @@ namespace Lidgren.Core
 			var hasher = Hasher.Create();
 			SingleUIntUnion union;
 			union.UIntValue = 0;
+			
 			union.SingleValue = x;
-			hasher.Add(union.UIntValue);
+			ulong input1 = union.UIntValue;
 			union.SingleValue = y;
-			hasher.Add(union.UIntValue);
+			input1 |= (union.UIntValue << 32);
+			hasher.AddAligned64(input1);
+
 			union.SingleValue = z;
 			hasher.Add(union.UIntValue);
+			
 			return hasher.Finalize64();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ulong Hash64(float x, float y, float z, float w)
 		{
-			var hasher = Hasher.Create();
 			SingleUIntUnion union;
 			union.UIntValue = 0;
 
 			union.SingleValue = x;
-			ulong input = union.UIntValue;
+			ulong input1 = union.UIntValue;
 			union.SingleValue = y;
-			input |= (union.UIntValue << 32);
-			hasher.Add(input);
+			input1 |= (union.UIntValue << 32);
 
 			union.SingleValue = z;
-			input = union.UIntValue;
+			ulong input2 = union.UIntValue;
 			union.SingleValue = w;
-			input |= (union.UIntValue << 32);
-			hasher.Add(input);
+			input2 |= (union.UIntValue << 32);
 
-			return hasher.Finalize64();
+			return Hash64(input1, input2);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static uint Hash32(float x, float y)
 		{
-			var hasher = Hasher.Create();
-			SingleUIntUnion union;
-			union.UIntValue = 0;
-			union.SingleValue = x;
-			hasher.Add(union.UIntValue);
-			union.SingleValue = y;
-			hasher.Add(union.UIntValue);
-			return hasher.Finalize32();
+			return HashUtil.XorFold64To32(Hash64(x, y));
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -146,12 +152,16 @@ namespace Lidgren.Core
 			var hasher = Hasher.Create();
 			SingleUIntUnion union;
 			union.UIntValue = 0;
+			
 			union.SingleValue = x;
-			hasher.Add(union.UIntValue);
+			ulong input1 = union.UIntValue;
 			union.SingleValue = y;
-			hasher.Add(union.UIntValue);
+			input1 |= (union.UIntValue << 32);
+			hasher.AddAligned64(input1);
+
 			union.SingleValue = z;
 			hasher.Add(union.UIntValue);
+			
 			return hasher.Finalize32();
 		}
 
@@ -258,7 +268,7 @@ namespace Lidgren.Core
 		/// Weyl hash
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static uint Combine(uint x, uint y)
+		public static uint Hash32(uint x, uint y)
 		{
 			x *= c_WEYLW0;
 			y *= c_WEYLW1;
