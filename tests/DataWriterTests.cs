@@ -21,6 +21,8 @@ namespace UnitTests
 				wrt.Write<Vector3>(new Vector3(9, 91, 81));
 				wrt.WriteString("Pararibulitis");
 				wrt.WriteVariableUInt64(0ul);
+				wrt.WriteVector3(new Vector3(1, 2, 3));
+				wrt.WriteVector4(new Vector4(1, 2, 3, 4));
 
 				var rdr = wrt.ReadOnlySpan;
 
@@ -38,6 +40,8 @@ namespace UnitTests
 				Assert.AreEqual(new Vector3(9, 91, 81), v);
 				Assert.AreEqual("Pararibulitis", rdr.ReadString());
 				Assert.AreEqual(0ul, rdr.ReadVariableUInt64());
+				Assert.AreEqual(new Vector3(1, 2, 3), rdr.ReadVector3());
+				Assert.AreEqual(new Vector4(1, 2, 3, 4), rdr.ReadVector4());
 			}
 		}
 
