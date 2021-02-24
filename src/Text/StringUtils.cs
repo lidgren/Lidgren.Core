@@ -6,6 +6,8 @@ namespace Lidgren.Core
 {
 	public static class StringUtils
 	{
+		private static char[] s_valueToHex = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+
 		/// <summary>
 		/// Single hex character to integer; ie. 'B' to 11; supports any casing
 		/// </summary>
@@ -83,10 +85,40 @@ namespace Lidgren.Core
 			return tmp.Slice(0, written).ToString();
 		}
 
+		/// <summary>
+		/// Convert array of bytes to string of hex characters; ie. { 31, 00 } to "1F00"
+		/// </summary>
+		public static void ToHex(ReadOnlySpan<byte> data, Span<char> into)
+		{
+			CoreException.Assert(into.Length >= data.Length * 2);
+			for (int i = 0; i < data.Length; i++)
+			{
+				into[i * 2] = s_valueToHex[data[i] >> 4];
+				into[i * 2 + 1] = s_valueToHex[data[i] & 0b1111];
+			}
+		}
+
+		/// <summary>
+		/// Convert array of bytes to string of hex characters; ie. { 31, 00 } to "1F00"
+		/// </summary>
+		public static string ToHex(ReadOnlySpan<byte> data)
+		{
+			if (data.Length < 1024)
+			{
+				Span<char> stacktmp = stackalloc char[data.Length * 2];
+				ToHex(data, stacktmp);
+				return stacktmp.ToString();
+			}
+
+			var tmp = new char[data.Length * 2];
+			ToHex(data, tmp);
+			return new string(tmp);
+		}
+
 		private const string c_doubleFixedPoint = "0.###################################################################################################################################################################################################################################################################################################################################################";
 
 		/// <summary>
-		/// Without scientific notation
+		/// Without scientific notation (0.00000000000123 -> "0.00000000000123", not "1.23E-12")
 		/// </summary>
 		public static string DoubleToString(double value, IFormatProvider? culture = null)
 		{

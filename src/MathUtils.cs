@@ -206,7 +206,13 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static float AngleToSlope(float degrees)
 		{
-			return (float)Math.Tan(MathUtils.DegreesToRadians((float)degrees));
+			return MathF.Tan(MathUtils.DegreesToRadians(degrees));
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static double AngleToSlope(double degrees)
+		{
+			return Math.Tan(MathUtils.DegreesToRadians(degrees));
 		}
 
 		/// <summary>
