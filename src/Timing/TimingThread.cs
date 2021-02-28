@@ -95,8 +95,14 @@ namespace Lidgren.Core
 				return;
 			}
 
+			int ccnt = m_completedCount;
+
+			if (ccnt > 0 && m_completed[ccnt - 1].Start == started)
+				started++; // push one tick to make better hierarchies
+
 			// no need for interlocked; this is a thread local object
-			ref var complete = ref m_completed[m_completedCount++];
+			ref var complete = ref m_completed[ccnt];
+			m_completedCount = ccnt + 1;
 			complete.Name = name;
 			complete.Start = started;
 			complete.Duration = (uint)duration;
