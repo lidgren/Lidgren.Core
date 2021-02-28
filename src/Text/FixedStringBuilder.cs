@@ -21,7 +21,12 @@ namespace Lidgren.Core
 		private Span<char> m_buffer;
 		private Span<char> m_remaining;
 		
-		public readonly int Length => m_buffer.Length - m_remaining.Length;
+		public int Length
+		{
+			readonly get { return m_buffer.Length - m_remaining.Length; }
+			set { m_remaining = m_buffer.Slice(value); }
+		}
+
 		public readonly Span<char> Span => m_buffer.Slice(0, Length);
 		public readonly ReadOnlySpan<char> ReadOnlySpan => m_buffer.Slice(0, Length);
 
