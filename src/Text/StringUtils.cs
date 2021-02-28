@@ -19,6 +19,37 @@ namespace Lidgren.Core
 		}
 
 		/// <summary>
+		/// Convert string of hex characters so span of bytes; ie. "0x011F" to { 1, 31 } - returns number of bytes read
+		/// </summary>
+		public static int FromHexArray(ReadOnlySpan<char> hexString, Span<byte> into)
+		{
+			if (hexString.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+				hexString = hexString.Slice(2);
+			CoreException.Assert(into.Length >= hexString.Length / 2);
+			int len = 0;
+			for (int i = 0; i < hexString.Length; i += 2)
+			{
+				var value = HexCharToInteger(hexString[i]) << 4 | (HexCharToInteger(hexString[i + 1]));
+				into[len] = (byte)value;
+				len++;
+			}
+			return len;
+		}
+
+		/// <summary>
+		/// Convert string of hex characters so array of bytes; ie. "0x011F" to { 1, 31 }
+		/// </summary>
+		public static byte[] FromHexArray(ReadOnlySpan<char> hexString)
+		{
+			if (hexString.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+				hexString = hexString.Slice(2);
+			var bytes = new byte[hexString.Length / 2];
+			int len = FromHexArray(hexString, bytes);
+			CoreException.Assert(len == bytes.Length);
+			return bytes;
+		}
+
+		/// <summary>
 		/// Convert string of hex characters to integer; ie. "0x1F" or just "1F" to 31; supports any casing
 		/// </summary>
 		public static ulong FromHex(ReadOnlySpan<char> hexString)
