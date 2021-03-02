@@ -6,6 +6,7 @@ Goals are:
 * Best possible performance
 * No reflection
 * Heap allocation free whenever possible
+* Use of spans instead of collection interfaces
 * Simple and self explanatory
 * Everything thoroughly unit tested
 
