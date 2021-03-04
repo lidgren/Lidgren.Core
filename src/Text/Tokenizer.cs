@@ -260,5 +260,19 @@ namespace Lidgren.Core
 
 			return count;
 		}
+
+		public static bool SplitOnce(ReadOnlySpan<T> data, T delimiter, out ReadOnlySpan<T> first, out ReadOnlySpan<T> second)
+		{
+			var idx = data.IndexOf(delimiter);
+			if (idx == -1)
+			{
+				first = default;
+				second = default;
+				return false;
+			}
+			first = data.Slice(0, idx);
+			second = data.Slice(idx + 1);
+			return true;
+		}
 	}
 }

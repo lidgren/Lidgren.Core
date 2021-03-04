@@ -149,7 +149,7 @@ namespace Lidgren.Core
 		private const string c_doubleFixedPoint = "0.###################################################################################################################################################################################################################################################################################################################################################";
 
 		/// <summary>
-		/// Without scientific notation (0.00000000000123 -> "0.00000000000123", not "1.23E-12")
+		/// Culture invariant and without scientific notation (0.00000000000123 -> "0.00000000000123", not "1.23E-12")
 		/// </summary>
 		public static string DoubleToString(double value, IFormatProvider? culture = null)
 		{
