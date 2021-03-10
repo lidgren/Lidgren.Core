@@ -127,6 +127,25 @@ namespace Lidgren.Core
 			m_offset = 0;
 		}
 
+		public FastList(IEnumerable<T> copyItems)
+		{
+			// loop over this twice to avoid unnecessary garbage
+			int cnt = 0;
+			foreach (var _ in copyItems)
+				cnt++;
+			m_count = 0;
+			m_offset = 0;
+			if (cnt == 0)
+			{
+				m_buffer = System.Array.Empty<T>();
+			}
+			else
+			{
+				m_buffer = new T[cnt];
+				AddRangeSlow(copyItems);
+			}
+		}
+
 		private FastList()
 		{
 		}
