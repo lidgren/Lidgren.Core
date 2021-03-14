@@ -110,6 +110,26 @@ namespace Lidgren.Core
 		}
 
 		/// <summary>
+		/// Writes a byte and reduces span to remaining data
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void WriteByte(ref this Span<byte> span, byte value)
+		{
+			span[0] = value;
+			span = span.Slice(1);
+		}
+
+		/// <summary>
+		/// Writes bytes and reduces span to remaining data
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void WriteBytes(ref this Span<byte> span, ReadOnlySpan<byte> data)
+		{
+			data.CopyTo(span);
+			span = span.Slice(data.Length);
+		}
+
+		/// <summary>
 		/// Writes UInt32 as a 7 bit encoded number (variable length: 1 to 5 bytes) and reduces span to remaining data
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -128,6 +148,17 @@ namespace Lidgren.Core
 			// zigzag encode
 			var uval = (ulong)((value << 1) ^ (value >> 63));
 			return WriteVariableUInt64(ref span, uval);
+		}
+
+		/// <summary>
+		/// Writes Int64 as a 7 bit encoded number (variable length: 1 to 9 bytes) and reduces span to remaining data
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static int WriteVariableInt32(ref this Span<byte> span, int value)
+		{
+			// zigzag encode
+			var uval = (uint)((value << 1) ^ (value >> 31));
+			return WriteVariableUInt32(ref span, uval);
 		}
 
 		/// <summary>
