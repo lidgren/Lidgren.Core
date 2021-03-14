@@ -29,6 +29,17 @@ namespace Lidgren.Core
 		/// Returns new span of size count from the data, then reduces span to remaining data
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static byte ReadByte(ref this ReadOnlySpan<byte> span)
+		{
+			var retval = span[0];
+			span = span.Slice(1);
+			return retval;
+		}
+
+		/// <summary>
+		/// Returns new span of size count from the data, then reduces span to remaining data
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ReadOnlySpan<byte> ReadBytes(ref this ReadOnlySpan<byte> span, int count)
 		{
 			var retval = span.Slice(0, count);
