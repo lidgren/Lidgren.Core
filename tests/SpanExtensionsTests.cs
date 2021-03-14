@@ -45,31 +45,59 @@ namespace UnitTests
 				numbers[6] = (ulong)PRNG.NextUInt64(ref state);
 			}
 
-			// signed
-			var signed = new long[7];
+			// signed 64 bit
+			var signed64 = new long[7];
 			for (int runs = 0; runs < 250000; runs++)
 			{
 				// re-randomize
-				signed[0] = (long)PRNG.Next(ref state, -5, 5);
-				signed[1] = (long)PRNG.Next(ref state, -100, 100);
-				signed[2] = (long)PRNG.Next(ref state, -300, 300);
-				signed[3] = (long)PRNG.Next(ref state, -5000, 5000);
-				signed[4] = (long)PRNG.Next(ref state, -70000, 70000);
-				signed[5] = (long)PRNG.NextUInt64(ref state);
-				signed[6] = (long)PRNG.NextUInt64(ref state);
+				signed64[0] = (long)PRNG.Next(ref state, -5, 5);
+				signed64[1] = (long)PRNG.Next(ref state, -100, 100);
+				signed64[2] = (long)PRNG.Next(ref state, -300, 300);
+				signed64[3] = (long)PRNG.Next(ref state, -5000, 5000);
+				signed64[4] = (long)PRNG.Next(ref state, -70000, 70000);
+				signed64[5] = (long)PRNG.NextUInt64(ref state);
+				signed64[6] = (long)PRNG.NextUInt64(ref state);
 
 				var work = arr.AsSpan();
-				for (int i = 0; i < signed.Length; i++)
-					work.WriteVariableInt64(signed[i]);
+				for (int i = 0; i < signed64.Length; i++)
+					work.WriteVariableInt64(signed64[i]);
 
 				int resultLength = arr.Length - work.Length;
 
 				ReadOnlySpan<byte> res = arr.AsSpan(0, resultLength);
 
-				for (int i = 0; i < signed.Length; i++)
+				for (int i = 0; i < signed64.Length; i++)
 				{
 					var nr = res.ReadVariableInt64();
-					Assert.AreEqual(signed[i], nr);
+					Assert.AreEqual(signed64[i], nr);
+				}
+			}
+
+			// signed int32
+			var signed32 = new int[7];
+			for (int runs = 0; runs < 250000; runs++)
+			{
+				// re-randomize
+				signed32[0] = (int)PRNG.Next(ref state, -5, 5);
+				signed32[1] = (int)PRNG.Next(ref state, -100, 100);
+				signed32[2] = (int)PRNG.Next(ref state, -300, 300);
+				signed32[3] = (int)PRNG.Next(ref state, -5000, 5000);
+				signed32[4] = (int)PRNG.Next(ref state, -70000, 70000);
+				signed32[5] = (int)PRNG.NextUInt32(ref state);
+				signed32[6] = (int)PRNG.NextUInt32(ref state);
+
+				var work = arr.AsSpan();
+				for (int i = 0; i < signed32.Length; i++)
+					work.WriteVariableInt32(signed32[i]);
+
+				int resultLength = arr.Length - work.Length;
+
+				ReadOnlySpan<byte> res = arr.AsSpan(0, resultLength);
+
+				for (int i = 0; i < signed64.Length; i++)
+				{
+					var nr = res.ReadVariableInt32();
+					Assert.AreEqual(signed32[i], nr);
 				}
 			}
 		}
