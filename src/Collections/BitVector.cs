@@ -22,12 +22,17 @@ namespace Lidgren.Core
 		private int m_exactSize;
 #endif
 
-		public BitVector(int size)
+		/// <summary>
+		/// Number of bits in the vector
+		/// </summary>
+		public int Size => m_data.Length * 64;
+
+		public BitVector(int minSize)
 		{
-			int numUnits = UnitsToHoldBits(size);
+			int numUnits = UnitsToHoldBits(minSize);
 			m_data = new ulong[numUnits];
 #if DEBUG
-			m_exactSize = size;
+			m_exactSize = minSize;
 #endif
 		}
 
