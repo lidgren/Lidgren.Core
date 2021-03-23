@@ -129,7 +129,8 @@ namespace Lidgren.Core
 
 			// clear out the data if necessary
 			if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
-				Span.Clear();
+				Span.Slice(index, count).Clear();
+
 			m_count -= count;
 
 			if (count == localSpanCount)
