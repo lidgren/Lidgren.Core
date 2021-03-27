@@ -65,6 +65,17 @@ namespace UnitTests
 
 			p = (double)larger / (double)iterations;
 			Assert.IsTrue(p > low && p < high);
+
+			// make sure nextdouble() and nextfloat() don't generate numbers outside range
+			var state = RandomSeed.GetUInt64();
+			for (int r = 0; r < 10000000; r++)
+			{
+				double d = PRNG.NextDouble(ref state);
+				Assert.IsTrue(d >= 0.0 && d < 1.0);
+
+				float f = PRNG.NextFloat(ref state);
+				Assert.IsTrue(f >= 0.0f && f < 1.0f);
+			}
 		}
 	}
 }
