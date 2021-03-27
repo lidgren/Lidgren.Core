@@ -3,6 +3,23 @@ using System.Runtime.InteropServices;
 
 namespace Lidgren.Core
 {
+	[StructLayout(LayoutKind.Explicit)]
+	public ref struct BoolUIntUnion
+	{
+		/// <summary>
+		/// Value as a boolean
+		/// </summary>
+		[FieldOffset(0)]
+		public bool BoolValue;
+
+		/// <summary>
+		/// Value as an unsigned 32 bit integer
+		/// </summary>
+		[FieldOffset(0)]
+		public uint UIntValue;
+
+	}
+
 	/// <summary>
 	/// Utility struct for writing Singles
 	/// </summary>
