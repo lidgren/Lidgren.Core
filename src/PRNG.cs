@@ -81,7 +81,10 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool NextBool(ref ulong state)
 		{
-			return NextUInt64(ref state) > 0x7FFFFFFFFFFFFFFFul;
+			BoolUIntUnion union;
+			union.BoolValue = false;
+			union.UIntValue = NextUInt32(ref state) >> 16; // don't trust the lower bits
+			return union.BoolValue;
 		}
 
 		/// <summary>
@@ -90,27 +93,7 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool NextBool()
 		{
-			return NextUInt64(ref s_state) > 0x7FFFFFFFFFFFFFFFul;
-		}
-
-		private static ulong s_bools = 0;
-		private static int s_remainingBools = 0;
-
-		/// <summary>
-		/// Returns true or false randomly
-		/// </summary>
-		public static bool NextBoolAlt()
-		{
-			if (s_remainingBools == 0)
-			{
-				s_remainingBools = 64;
-				s_bools = NextUInt64();
-			}
-
-			var retval = (s_bools & 1) == 1;
-			s_bools >>= 1;
-			s_remainingBools--;
-			return retval;
+			return NextBool(ref s_state);
 		}
 
 		/// <summary>
@@ -132,7 +115,7 @@ namespace Lidgren.Core
 		}
 
 		/// <summary>
-		/// Fills buffer slice with random numbers
+		/// Fill span with random bytes
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void NextBytes(ref ulong state, Span<byte> bytes)
@@ -141,7 +124,7 @@ namespace Lidgren.Core
 			{
 				Span<ulong> ulongs = MemoryMarshal.Cast<byte, ulong>(bytes);
 
-				int full = bytes.Length / 8;
+				var full = bytes.Length >> 3;
 				for (int i = 0; i < full; i++)
 				{
 					var x = state;
@@ -152,9 +135,30 @@ namespace Lidgren.Core
 					ulongs[i] = x * c_star;
 				}
 
-				int offset = full * 8;
-				while (offset < bytes.Length)
-					bytes[offset++] = (byte)NextUInt64(ref state);
+				int offset = full << 3;
+				switch (bytes.Length - offset)
+				{
+					case 0:
+					default:
+						return;
+
+					case 1:
+						bytes[offset] = (byte)NextUInt64(ref state);
+						return;
+
+					case 2:
+						var r = NextUInt64(ref state);
+						bytes[offset] = (byte)r;
+						bytes[offset + 1] = (byte)(r >> 8);
+						return;
+
+					case 3:
+						var r2 = NextUInt64(ref state);
+						bytes[offset] = (byte)r2;
+						bytes[offset + 1] = (byte)(r2 >> 8);
+						bytes[offset + 2] = (byte)(r2 >> 16);
+						return;
+				}
 			}
 		}
 
@@ -199,6 +203,7 @@ namespace Lidgren.Core
 		{
 			DoubleULongUnion union;
 			union.DoubleValue = 0;
+			// generate 52 random mantissa bits and an unbiased exponent of 0
 			union.ULongValue = (NextUInt64(ref state) & 0xFFFFFFFFFFFFFUL) | 0x3FF0000000000000UL;
 			double zeroToOne = union.DoubleValue - 1.0;
 			CoreException.Assert(zeroToOne >= 0.0f && zeroToOne < 1.0);
@@ -245,7 +250,13 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static float NextFloat(ref ulong state)
 		{
-			return (float)NextDouble(ref state);
+			SingleUIntUnion union;
+			union.SingleValue = 0;
+			// generate a float with 23 random mantissa bits and an (unbiased) exponent of 0
+			union.UIntValue = (NextUInt32(ref state) & 0b01111111_11111111_11111111u) | 0x3F800000u;
+			float zeroToOne = union.SingleValue - 1.0f;
+			CoreException.Assert(zeroToOne >= 0.0f && zeroToOne < 1.0);
+			return zeroToOne;
 		}
 
 		/// <summary>
