@@ -83,7 +83,7 @@ namespace Lidgren.Core
 		{
 			BoolUIntUnion union;
 			union.BoolValue = false;
-			union.UIntValue = NextUInt32(ref state) >> 16; // don't trust the lower bits
+			union.UIntValue = (NextUInt32(ref state) >> 16) & 1u; // don't trust the lower bits
 			return union.BoolValue;
 		}
 
