@@ -32,3 +32,4 @@ Documentation in the [wiki](https://github.com/lidgren/Lidgren.Core/wiki) or .md
 * Color; including randomizing
 * PriorityQueue
 * FourCC
+* File utils; hashing and comparing
