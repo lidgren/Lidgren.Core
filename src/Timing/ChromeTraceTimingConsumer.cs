@@ -20,7 +20,7 @@ namespace Lidgren.Core
 
 			var fs = new FileStream(filename, FileMode.Create, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete);
 			m_writer = new StreamWriter(fs);
-			m_writer.WriteLine("[ { }");
+			m_writer.WriteLine("{ \"traceEvents\": [");
 			m_writer.Flush();
 			TimingService.AddListener(Flush);
 		}
@@ -90,7 +90,7 @@ namespace Lidgren.Core
 			m_writer = null;
 			if (writer != null)
 			{
-				writer.WriteLine("]");
+				writer.WriteLine("] }");
 				var fs = writer.BaseStream as FileStream;
 				if (fs != null)
 					fs.Flush(true);
