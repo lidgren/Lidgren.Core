@@ -7,10 +7,16 @@ namespace Lidgren.Core
 {
 	public static class RandomSeed
 	{
-		private static volatile int s_seedIncrement = 997;
+		private static volatile int s_seedIncrement;
+		private static readonly Random s_systemRandom;
 
-		// default seed for Random() is Environment.TickCount... but we can do better.
-		private static readonly Random s_systemRandom = new Random((int)HashUtil.XorFold64To32((ulong)Stopwatch.GetTimestamp()));
+		static RandomSeed()
+		{
+			s_seedIncrement = 997;
+
+			int sysSeed = (int)HashUtil.XorFold64To32((ulong)Stopwatch.GetTimestamp() ^ (ulong)Environment.TickCount);
+			s_systemRandom = new Random(sysSeed);
+		}
 
 		/// <summary>
 		/// Generates a 64 bit random seed by combining various factors that are very hard to predict
