@@ -18,9 +18,14 @@ namespace Lidgren.Core
 		/// <summary>
 		/// Run shell command; f.ex. for opening html links. Do not block, return immediately
 		/// </summary>
-		public static void RunShell(string command, string arguments)
+		public static Process RunShell(string command, string arguments)
 		{
-			Process.Start(command, arguments);
+			var process = new Process();
+			process.StartInfo.Verb = command;
+			process.StartInfo.Arguments = arguments;
+			process.StartInfo.UseShellExecute = true;
+			process.Start();
+			return process;
 		}
 
 		/// <summary>
@@ -28,7 +33,7 @@ namespace Lidgren.Core
 		/// </summary>
 		public static RunProcessResult RunShell(string command, string arguments, out int exitCode, TimeSpan timeout)
 		{
-			var process = Process.Start(command, arguments);
+			var process = RunShell(command, arguments);
 			bool exited = process.WaitForExit((int)timeout.TotalMilliseconds);
 			if (!exited)
 			{
