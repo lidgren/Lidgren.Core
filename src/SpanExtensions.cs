@@ -214,10 +214,7 @@ namespace Lidgren.Core
 			BinaryPrimitives.WriteSingleLittleEndian(span, value);
 			span = span.Slice(4);
 #else
-			SingleUIntUnion union;
-			union.UIntValue = 0;
-			union.SingleValue = value;
-			WriteUInt32(ref span, union.UIntValue);
+			WriteUInt32(ref span, SingleUIntUnion.ReinterpretCast(value));
 #endif
 		}
 
@@ -232,10 +229,7 @@ namespace Lidgren.Core
 			span = span.Slice(4);
 			return retval;
 #else
-			SingleUIntUnion union;
-			union.SingleValue = 0;
-			union.UIntValue = ReadUInt32(ref span);
-			return union.SingleValue;
+			return SingleUIntUnion.ReinterpretCast(ReadUInt32(ref span));
 #endif
 		}
 
@@ -249,10 +243,7 @@ namespace Lidgren.Core
 			BinaryPrimitives.WriteDoubleLittleEndian(span, value);
 			span = span.Slice(8);
 #else
-			DoubleULongUnion union;
-			union.ULongValue = 0;
-			union.DoubleValue = value;
-			WriteUInt64(ref span, union.ULongValue);
+			WriteUInt64(ref span, DoubleULongUnion.ReinterpretCast(value));
 #endif
 		}
 
@@ -267,10 +258,7 @@ namespace Lidgren.Core
 			span = span.Slice(8);
 			return retval;
 #else
-			DoubleULongUnion union;
-			union.DoubleValue = 0;
-			union.ULongValue = ReadUInt64(ref span);
-			return union.DoubleValue;
+			return DoubleULongUnion.ReinterpretCast(ReadUInt64(ref span));
 #endif
 		}
 

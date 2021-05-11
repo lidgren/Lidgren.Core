@@ -115,10 +115,7 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Add(float value)
 		{
-			SingleUIntUnion union;
-			union.UIntValue = 0;
-			union.SingleValue = value;
-			Add(union.UIntValue);
+			Add(SingleUIntUnion.ReinterpretCast(value));
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -184,10 +181,7 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Add(double value)
 		{
-			DoubleULongUnion union;
-			union.ULongValue = 0;
-			union.DoubleValue = value;
-			Add(union.ULongValue);
+			Add(DoubleULongUnion.ReinterpretCast(value));
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

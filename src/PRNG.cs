@@ -81,10 +81,7 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool NextBool(ref ulong state)
 		{
-			BoolUIntUnion union;
-			union.BoolValue = false;
-			union.UIntValue = (NextUInt32(ref state) >> 16) & 1u; // don't trust the lower bits
-			return union.BoolValue;
+			return BoolUIntUnion.ReinterpretCast(NextUInt32(ref state) >> 16);
 		}
 
 		/// <summary>
@@ -201,11 +198,9 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static double NextDouble(ref ulong state)
 		{
-			DoubleULongUnion union;
-			union.DoubleValue = 0;
 			// generate 52 random mantissa bits and an unbiased exponent of 0
-			union.ULongValue = (NextUInt64(ref state) & 0xFFFFFFFFFFFFFUL) | 0x3FF0000000000000UL;
-			double zeroToOne = union.DoubleValue - 1.0;
+			ulong dval = (NextUInt64(ref state) & 0xFFFFFFFFFFFFFUL) | 0x3FF0000000000000UL;
+			double zeroToOne = DoubleULongUnion.ReinterpretCast(dval) - 1.0;
 			CoreException.Assert(zeroToOne >= 0.0f && zeroToOne < 1.0);
 			return zeroToOne;
 		}
@@ -226,10 +221,8 @@ namespace Lidgren.Core
 		{
 			CoreException.Assert(maxValue > minValue);
 
-			DoubleULongUnion union;
-			union.DoubleValue = 0;
-			union.ULongValue = (NextUInt64(ref state) & 0xFFFFFFFFFFFFFUL) | 0x3FF0000000000000UL;
-			double zeroToOne = union.DoubleValue - 1.0;
+			var dval = (NextUInt64(ref state) & 0xFFFFFFFFFFFFFUL) | 0x3FF0000000000000UL;
+			double zeroToOne = DoubleULongUnion.ReinterpretCast(dval) - 1.0;
 			double retval = minValue + ((maxValue - minValue) * zeroToOne);
 			CoreException.Assert(retval >= minValue && retval < maxValue);
 			return retval;
@@ -250,11 +243,8 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static float NextFloat(ref ulong state)
 		{
-			SingleUIntUnion union;
-			union.SingleValue = 0;
-			// generate a float with 23 random mantissa bits and an (unbiased) exponent of 0
-			union.UIntValue = (NextUInt32(ref state) & 0b01111111_11111111_11111111u) | 0x3F800000u;
-			float zeroToOne = union.SingleValue - 1.0f;
+			uint v = (NextUInt32(ref state) & 0b01111111_11111111_11111111u) | 0x3F800000u;
+			float zeroToOne = SingleUIntUnion.ReinterpretCast(v) - 1.0f;
 			CoreException.Assert(zeroToOne >= 0.0f && zeroToOne < 1.0);
 			return zeroToOne;
 		}

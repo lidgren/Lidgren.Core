@@ -91,53 +91,25 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ulong Hash64(float x, float y)
 		{
-			SingleUIntUnion union;
-			union.UIntValue = 0;
-
-			union.SingleValue = x;
-			ulong input1 = union.UIntValue;
-			union.SingleValue = y;
-			input1 |= (union.UIntValue << 32);
-
-			return Hash64(input1);
+			return Hash64(TwoSinglesULongUnion.ReinterpretCast(x, y));
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ulong Hash64(float x, float y, float z)
 		{
 			var hasher = Hasher.Create();
-			SingleUIntUnion union;
-			union.UIntValue = 0;
-			
-			union.SingleValue = x;
-			ulong input1 = union.UIntValue;
-			union.SingleValue = y;
-			input1 |= (union.UIntValue << 32);
-			hasher.AddAligned64(input1);
-
-			union.SingleValue = z;
-			hasher.Add(union.UIntValue);
-			
+			hasher.AddAligned64(TwoSinglesULongUnion.ReinterpretCast(x, y));
+			hasher.Add(SingleUIntUnion.ReinterpretCast(z));
 			return hasher.Finalize64();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ulong Hash64(float x, float y, float z, float w)
 		{
-			SingleUIntUnion union;
-			union.UIntValue = 0;
-
-			union.SingleValue = x;
-			ulong input1 = union.UIntValue;
-			union.SingleValue = y;
-			input1 |= (union.UIntValue << 32);
-
-			union.SingleValue = z;
-			ulong input2 = union.UIntValue;
-			union.SingleValue = w;
-			input2 |= (union.UIntValue << 32);
-
-			return Hash64(input1, input2);
+			var hasher = Hasher.Create();
+			hasher.AddAligned64(TwoSinglesULongUnion.ReinterpretCast(x, y));
+			hasher.AddAligned64(TwoSinglesULongUnion.ReinterpretCast(z, w));
+			return hasher.Finalize64();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -150,38 +122,18 @@ namespace Lidgren.Core
 		public static uint Hash32(float x, float y, float z)
 		{
 			var hasher = Hasher.Create();
-			SingleUIntUnion union;
-			union.UIntValue = 0;
-			
-			union.SingleValue = x;
-			ulong input1 = union.UIntValue;
-			union.SingleValue = y;
-			input1 |= (union.UIntValue << 32);
-			hasher.AddAligned64(input1);
-
-			union.SingleValue = z;
-			hasher.Add(union.UIntValue);
-			
+			hasher.AddAligned64(TwoSinglesULongUnion.ReinterpretCast(x, y));
+			hasher.Add(SingleUIntUnion.ReinterpretCast(z));
 			return hasher.Finalize32();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static uint Hash32(float x, float y, float z, float w)
 		{
-			SingleUIntUnion union;
-			union.UIntValue = 0;
-
-			union.SingleValue = x;
-			ulong input1 = union.UIntValue;
-			union.SingleValue = y;
-			input1 |= (union.UIntValue << 32);
-
-			union.SingleValue = z;
-			ulong input2 = union.UIntValue;
-			union.SingleValue = w;
-			input2 |= (union.UIntValue << 32);
-
-			return Hash32(input1, input2);
+			var hasher = Hasher.Create();
+			hasher.AddAligned64(TwoSinglesULongUnion.ReinterpretCast(x, y));
+			hasher.AddAligned64(TwoSinglesULongUnion.ReinterpretCast(z, w));
+			return hasher.Finalize32();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
