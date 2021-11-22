@@ -5,8 +5,8 @@ using System.Text;
 
 namespace Lidgren.Core
 {
-    public static class ProcessUtil
-    {
+	public static class ProcessUtil
+	{
 		public enum RunProcessResult
 		{
 			FailedToStartProcess,
@@ -71,14 +71,22 @@ namespace Lidgren.Core
 
 			var stdOutBdr = new StringBuilder();
 			process.StartInfo.RedirectStandardOutput = true;
-			process.OutputDataReceived += (sender, data) => {
-				stdOutBdr.AppendLine(data.Data);
+			process.OutputDataReceived += (sender, data) =>
+			{
+				lock (stdOutBdr)
+				{
+					stdOutBdr.AppendLine(data.Data);
+				}
 			};
 
 			var stdErrBdr = new StringBuilder();
 			process.StartInfo.RedirectStandardError = true;
-			process.ErrorDataReceived += (sender, data) => {
-				stdErrBdr.AppendLine(data.Data);
+			process.ErrorDataReceived += (sender, data) =>
+			{
+				lock (stdErrBdr)
+				{
+					stdErrBdr.AppendLine(data.Data);
+				}
 			};
 
 			bool ok = process.Start();
@@ -93,9 +101,15 @@ namespace Lidgren.Core
 			if (!exited)
 				return RunProcessResult.TimedOut;
 
-			stdOut = stdOutBdr.ToString();
-			stdErr = stdErrBdr.ToString();
 			exitCode = process.ExitCode;
+			lock (stdOutBdr)
+			{
+				stdOut = stdOutBdr.ToString();
+			}
+			lock (stdErrBdr)
+			{
+				stdErr = stdErrBdr.ToString();
+			}
 
 			if (exitCode == 0)
 				return RunProcessResult.ExitCodeZero;
