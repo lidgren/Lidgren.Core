@@ -145,7 +145,7 @@ namespace Lidgren.Core
 		public override int GetHashCode() => (int)RGBA;
 
 		/// <summary>
-		/// To big endian hex value (ie. #FFA50033 for orange with 20% opacity)
+		/// To big endian hex value (ie. RRGGBBAA, for example #FFA50033 for orange with 20% opacity)
 		/// </summary>
 		public string ToHex()
 		{
@@ -154,7 +154,16 @@ namespace Lidgren.Core
 		}
 
 		/// <summary>
-		/// To big endian hex value (ie. #FFA50033 for orange with 20% opacity)
+		/// To alpha prefixed hex value (ie. AARRGGBB, for example #33FFA500 for orange with 20% opacity)
+		/// </summary>
+		public string ToHexARGB()
+		{
+			uint big = ((uint)A << 24) | ((uint)R << 16) | ((uint)G << 8) | (uint)B;
+			return StringUtils.ToHex(big, 8);
+		}
+
+		/// <summary>
+		/// To big endian hex value (ie. RRGGBBAA, for example #FFA50033 for orange with 20% opacity)
 		/// </summary>
 		public int ToHex(Span<char> str)
 		{
@@ -163,7 +172,7 @@ namespace Lidgren.Core
 		}
 
 		/// <summary>
-		/// Convert from big endian hex value (ie. #FFA50033 for orange with 20% opacity; or #FF0000 which is Solid Red)
+		/// Convert from big endian hex value (ie. RRGGBBAA, for example #FFA50033 for orange with 20% opacity; or #FF0000 which is Solid Red)
 		/// </summary>
 		public static Color FromHex(ReadOnlySpan<char> hex)
 		{
