@@ -32,7 +32,7 @@ namespace Lidgren.Core
 		/// <summary>
 		/// Gets remaining (untokenized) data
 		/// </summary>
-		public readonly ReadOnlySpan<T> Remaining => m_all.Slice(m_currentIndex);
+		public readonly ReadOnlySpan<T> Remaining => m_currentIndex >= m_all.Length ? ReadOnlySpan<T>.Empty : m_all.Slice(m_currentIndex);
 
 		/// <summary>
 		/// Follows same rules as string.Split(delimiter)
