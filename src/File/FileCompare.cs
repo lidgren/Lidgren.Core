@@ -47,8 +47,8 @@ namespace Lidgren.Core
 		/// </summary>
 		public static Result AreEqual(string filename1, string filename2, int bufSize = kDefaultBufferSize)
 		{
-			var retval = CompareByFileName(filename1, filename2, out bool gotResult, out FileInfo f1, out FileInfo f2);
-			if (gotResult)
+			var retval = CompareSize(filename1, filename2, out FileInfo f1, out FileInfo f2);
+			if (retval != Result.Identical)
 				return retval;
 			using (var fs1 = f1.OpenRead())
 			{
@@ -64,8 +64,8 @@ namespace Lidgren.Core
 		/// </summary>
 		public static Result AreEqual(string filename1, string filename2, Span<byte> buf1, Span<byte> buf2)
 		{
-			var retval = CompareByFileName(filename1, filename2, out bool gotResult, out FileInfo f1, out FileInfo f2);
-			if (gotResult)
+			var retval = CompareSize(filename1, filename2, out FileInfo f1, out FileInfo f2);
+			if (retval != Result.Identical)
 				return retval;
 			using (var fs1 = f1.OpenRead())
 			{
@@ -132,20 +132,18 @@ namespace Lidgren.Core
 			}
 		}
 
-		private static Result CompareByFileName(string filename1, string filename2, out bool gotResult, out FileInfo f1, out FileInfo f2)
+		private static Result CompareSize(string filename1, string filename2, out FileInfo f1, out FileInfo f2)
 		{
 			bool m1 = string.IsNullOrEmpty(filename1);
 			bool m2 = string.IsNullOrEmpty(filename2);
 			if (m1)
 			{
 				f1 = f2 = null;
-				gotResult = true;
 				return m2 ? Result.BothFilesMissing : Result.File1Missing;
 			}
 			if (m2)
 			{
 				f1 = f2 = null;
-				gotResult = true;
 				return Result.File2Missing;
 			}
 
@@ -155,23 +153,20 @@ namespace Lidgren.Core
 
 			if (f1.Exists == false)
 			{
-				gotResult = true;
 				return (f2.Exists == false) ? Result.BothFilesMissing : Result.File1Missing;
 			}
 			if (f2.Exists == false)
 			{
-				gotResult = true;
 				return Result.File2Missing;
 			}
 
 			if (f1.FullName.Equals(f2.FullName, StringComparison.Ordinal))
 			{
-				gotResult = true;
 				return Result.SameFile;
 			}
 
-			gotResult = f1.Length != f2.Length;
-			return Result.Different;
+
+			return f1.Length == f2.Length ? Result.Identical : Result.Different;
 		}
 	}
 }
