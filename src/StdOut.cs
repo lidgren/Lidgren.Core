@@ -94,6 +94,9 @@ namespace Lidgren.Core
 		private const string k_escapeForegroundColor = "\u001b[38;2;";
 		private const string k_escapeBackgroundColor = "\u001b[48;2;";
 		private const string k_escapeClearScreen = "\u001b[2Jm\u001b[H";
+		private const string k_bold = "\u001b[1m";
+		private const string k_underline = "\u001b[4m";
+		private const string k_reversed = "\u001b[7m";
 
 		public static void ClearScreen(ReadOnlySpan<char> hexBackgroundColor = default)
 		{
@@ -190,6 +193,30 @@ namespace Lidgren.Core
 				Console.Out.Write(code);
 				Console.Out.Write(text);
 				Console.Out.Write(k_escapeReset);
+			}
+		}
+
+		public static void Bold()
+		{
+			lock (s_lock)
+			{
+				Console.Out.Write(k_bold);
+			}
+		}
+
+		public static void Underline()
+		{
+			lock (s_lock)
+			{
+				Console.Out.Write(k_underline);
+			}
+		}
+
+		public static void Reversed()
+		{
+			lock (s_lock)
+			{
+				Console.Out.Write(k_reversed);
 			}
 		}
 
