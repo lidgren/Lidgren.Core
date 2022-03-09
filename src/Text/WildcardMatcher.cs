@@ -43,6 +43,17 @@ namespace Lidgren.Core
 		private readonly FastList<Token> m_tokens;
 		private readonly StringComparison m_stringComparison;
 
+		public override string ToString()
+		{
+			var sb = new ValueStringBuilder(80);
+			sb.Append(m_matchType.ToString());
+			sb.Append(' ');
+			sb.Append(m_pattern);
+			sb.Append(' ');
+			sb.Append(m_stringComparison.ToString());
+			return sb.ToString();
+		}
+
 		public WildcardMatcher(string pattern, bool ignoreCase = false)
 		{
 			m_pattern = pattern;
