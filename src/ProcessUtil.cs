@@ -18,12 +18,16 @@ namespace Lidgren.Core
 		/// <summary>
 		/// Run shell command; f.ex. for opening html links. Do not block, return immediately
 		/// </summary>
-		public static Process RunShell(string command, string arguments)
+		public static Process RunShell(string command, string arguments, string workingDirectory = null)
 		{
 			var process = new Process();
 			process.StartInfo.Verb = command;
 			process.StartInfo.Arguments = arguments;
 			process.StartInfo.UseShellExecute = true;
+			if (string.IsNullOrWhiteSpace(workingDirectory) == false)
+			{
+				process.StartInfo.WorkingDirectory = workingDirectory;
+			}
 			process.Start();
 			return process;
 		}
@@ -31,9 +35,9 @@ namespace Lidgren.Core
 		/// <summary>
 		/// Run shell command; f.ex. for opening html links; blocks until complete or timeout and returns error code
 		/// </summary>
-		public static RunProcessResult RunShell(string command, string arguments, out int exitCode, TimeSpan timeout)
+		public static RunProcessResult RunShell(string command, string arguments, out int exitCode, TimeSpan timeout, string workingDirectory = null)
 		{
-			var process = RunShell(command, arguments);
+			var process = RunShell(command, arguments, workingDirectory);
 			bool exited = process.WaitForExit((int)timeout.TotalMilliseconds);
 			if (!exited)
 			{
@@ -68,6 +72,10 @@ namespace Lidgren.Core
 			process.StartInfo.Arguments = arguments;
 			process.StartInfo.CreateNoWindow = true;
 			process.StartInfo.UseShellExecute = false;
+			if (string.IsNullOrWhiteSpace(workingDirectory) == false)
+			{
+				process.StartInfo.WorkingDirectory = workingDirectory;
+			}
 
 			var stdOutBdr = new StringBuilder();
 			process.StartInfo.RedirectStandardOutput = true;
@@ -110,6 +118,79 @@ namespace Lidgren.Core
 			{
 				stdErr = stdErrBdr.ToString();
 			}
+
+			if (exitCode == 0)
+				return RunProcessResult.ExitCodeZero;
+			return RunProcessResult.ExitCodeNonZero;
+		}
+
+		/// <summary>
+		/// Does not use shell execute and redirect output; blocks until complete or timeout and returns error code
+		/// </summary>
+		public static RunProcessResult RunBlockingWithInput(
+			string executable,
+			string arguments,
+			string workingDirectory,
+			TimeSpan timeout,
+			string stdIn,
+			out int exitCode,
+			out string stdOut,
+			out string stdErr)
+		{
+			stdOut = "";
+			stdErr = "";
+			exitCode = -1;
+
+			var process = new Process();
+			process.StartInfo.FileName = executable;
+			process.StartInfo.Arguments = arguments;
+			process.StartInfo.CreateNoWindow = true;
+			process.StartInfo.UseShellExecute = false;
+			if (string.IsNullOrWhiteSpace(workingDirectory) == false)
+			{
+				process.StartInfo.WorkingDirectory = workingDirectory;
+			}
+
+			var stdOutBdr = new StringBuilder();
+			process.StartInfo.RedirectStandardOutput = true;
+			process.OutputDataReceived += (sender, data) =>
+			{
+				stdOutBdr.AppendLine(data.Data);
+			};
+
+			var stdErrBdr = new StringBuilder();
+			process.StartInfo.RedirectStandardError = true;
+			process.ErrorDataReceived += (sender, data) =>
+			{
+				stdErrBdr.AppendLine(data.Data);
+			};
+
+			process.StartInfo.RedirectStandardInput = true;
+#if NET5_0_OR_GREATER
+			process.StartInfo.StandardInputEncoding = Encoding.Latin1;
+#endif
+
+			bool ok = process.Start();
+			if (!ok)
+				return RunProcessResult.FailedToStartProcess;
+
+			// write input
+			using (var writer = process.StandardInput)
+			{
+				writer.Write(stdIn);
+			}
+
+			// read output
+			process.BeginOutputReadLine();
+			process.BeginErrorReadLine();
+
+			bool exited = process.WaitForExit((int)timeout.TotalMilliseconds);
+			if (!exited)
+				return RunProcessResult.TimedOut;
+
+			stdOut = stdOutBdr.ToString();
+			stdErr = stdErrBdr.ToString();
+			exitCode = process.ExitCode;
 
 			if (exitCode == 0)
 				return RunProcessResult.ExitCodeZero;
