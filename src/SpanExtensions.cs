@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -336,7 +337,7 @@ namespace Lidgren.Core
 		/// Write an unmanaged struct (ie containing no reference types) and reduces span to remaining data
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void Write<T>(ref this Span<byte> span, T value) where T : unmanaged
+		public static void Write<T>(ref this Span<byte> span, ref T value) where T : unmanaged
 		{
 			MemoryMarshal.Write<T>(span, ref value);
 			span = span.Slice(Unsafe.SizeOf<T>());

@@ -210,7 +210,7 @@ namespace Lidgren.Core
 		/// <summary>
 		/// Write an unmanaged struct (ie containing no reference types)
 		/// </summary>
-		public void Write<T>(T value) where T : unmanaged
+		public void Write<T>(ref T value) where T : unmanaged
 		{
 			var into = Allocate(Unsafe.SizeOf<T>());
 			MemoryMarshal.Write<T>(into, ref value);

@@ -18,7 +18,8 @@ namespace UnitTests
 				wrt.WriteDouble(1.88);
 				wrt.WriteVariableInt32(12345);
 				wrt.WriteLengthPrefixedArray<ushort>(new ushort[] { 12, 1, 65000 });
-				wrt.Write<Vector3>(new Vector3(9, 91, 81));
+				var tmp = new Vector3(9, 91, 81);
+				wrt.Write<Vector3>(ref tmp);
 				wrt.WriteString("Pararibulitis");
 				wrt.WriteVariableUInt64(0ul);
 				wrt.WriteVector3(new Vector3(1, 2, 3));

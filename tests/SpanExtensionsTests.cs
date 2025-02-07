@@ -112,11 +112,15 @@ namespace UnitTests
 			span.WriteDouble(1.2);
 			span.WriteString("Pararibulitis");
 			span.WriteUInt16(12);
-			span.Write<Vector2>(new Vector2(1.0f, 2.0f));
+			var tmp = new Vector2(1.0f, 2.0f);
+			span.Write<Vector2>(ref tmp);
 			span.WriteLengthPrefixedArray<byte>(new byte[] { 43, 42, 41 });
-			span.Write<Vector3>(new Vector3(1.0f, 2.0f, 3.0f));
-			span.Write<Vector4>(new Vector4(1.0f, 2.0f, 3.0f, 4.0f));
-			span.Write<Quaternion>(new Quaternion(1.0f, 2.0f, 3.0f, 4.0f));
+			var tmp1 = new Vector3(1.0f, 2.0f, 3.0f);
+			span.Write<Vector3>(ref tmp1);
+			var tmp2 = new Vector4(1.0f, 2.0f, 3.0f, 4.0f);
+			span.Write<Vector4>(ref tmp2);
+			var tmp3 = new Quaternion(1.0f, 2.0f, 3.0f, 4.0f);
+			span.Write<Quaternion>(ref tmp3);
 			span.WriteInt32(-120);
 			span.WriteString("Pickle Rick");
 
@@ -138,10 +142,10 @@ namespace UnitTests
 			Assert.IsTrue(rdr.Read<Quaternion>() == new Quaternion(1.0f, 2.0f, 3.0f, 4.0f));
 			Assert.AreEqual(-120, rdr.ReadInt32());
 
-			var tmp = new char[32];
-			var plen = rdr.ReadString(tmp.AsSpan());
+			var tmpBuf = new char[32];
+			var plen = rdr.ReadString(tmpBuf.AsSpan());
 			Assert.AreEqual("Pickle Rick".Length, plen);
-			Assert.IsTrue(tmp.AsSpan(0, plen).SequenceEqual("Pickle Rick".AsSpan()));
+			Assert.IsTrue(tmpBuf.AsSpan(0, plen).SequenceEqual("Pickle Rick".AsSpan()));
 
 			Assert.AreEqual(0, rdr.Length);
 		}
