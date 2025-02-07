@@ -160,8 +160,12 @@ namespace Lidgren.Core
 		public ReadOnlySpan<byte> ReadBytes(int count)
 		{
 			if (m_remaining.Length < count)
+			{
 				Fill();
-			return m_remaining.ReadBytes(count);
+			}
+			var retval = m_remaining.Slice(0, count);
+			m_remaining = m_remaining.Slice(count);
+			return retval;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

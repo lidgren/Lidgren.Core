@@ -35,7 +35,7 @@ namespace Lidgren.Core
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public Hasher(in ulong seed)
+		public Hasher(ulong seed)
 		{
 			m_hash = seed;
 			m_unit = 0;
@@ -43,7 +43,7 @@ namespace Lidgren.Core
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Reset(in ulong seed = M)
+		public void Reset(ulong seed = M)
 		{
 			m_hash = seed;
 			m_unit = 0;
