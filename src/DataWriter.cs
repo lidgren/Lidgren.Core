@@ -213,7 +213,10 @@ namespace Lidgren.Core
 		public void Write<T>(ref T value) where T : unmanaged
 		{
 			var into = Allocate(Unsafe.SizeOf<T>());
+
+#pragma warning disable CS9191
 			MemoryMarshal.Write<T>(into, ref value);
+#pragma warning restore CS9191
 		}
 
 		public void WriteVector2(in Vector2 value)

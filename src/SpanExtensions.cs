@@ -339,7 +339,9 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void Write<T>(ref this Span<byte> span, ref T value) where T : unmanaged
 		{
+#pragma warning disable CS9191
 			MemoryMarshal.Write<T>(span, ref value);
+#pragma warning restore CS9191
 			span = span.Slice(Unsafe.SizeOf<T>());
 		}
 
