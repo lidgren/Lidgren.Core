@@ -44,10 +44,8 @@ namespace Lidgren.Core
 				// ensure rapid invocations differ
 				v2 ^= ((ulong)Interlocked.Add(ref s_seedIncrement, s_seedIncrement) * 7199369ul);
 
-#if NET5_0_OR_GREATER
 				// add processid in case multiple process is running concurrently
 				v1 ^= (ulong)Environment.ProcessId << 16;
-#endif
 
 				// merge results
 				ulong result = v1 ^ v2;

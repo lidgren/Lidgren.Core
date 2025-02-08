@@ -13,15 +13,15 @@ namespace Lidgren.Core
 	/// </summary>
 	[DebuggerDisplay("{m_id}")]
 	[JsonConverter(typeof(Id32JsonConverter))]
-	public readonly struct Id32 : IEquatable<Id32>, IComparable<Id32>, IComparable<int>, IEquatable<int>
+	public readonly struct Id32 : IEquatable<Id32>, IComparable<Id32>, IComparable<uint>, IEquatable<uint>
 	{
 		public static readonly Id32 Invalid = new Id32(0);
 
-		private static int s_lastId = 0;
+		private static uint s_lastId = 0;
 
-		private readonly int m_id;
+		private readonly uint m_id;
 
-		public Id32(int value)
+		public Id32(uint value)
 		{
 			m_id = value;
 		}
@@ -33,17 +33,18 @@ namespace Lidgren.Core
 
 		public static Id32 Next()
 		{
-			return new Id32(Interlocked.Increment(ref s_lastId));
+			uint newId = Interlocked.Increment(ref s_lastId);
+			return new Id32(newId);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static explicit operator int(Id32 id)
+		public static explicit operator uint(Id32 id)
 		{
 			return id.m_id;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static explicit operator Id32(int val)
+		public static explicit operator Id32(uint val)
 		{
 			return new Id32(val);
 		}
@@ -59,7 +60,7 @@ namespace Lidgren.Core
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public readonly int CompareTo(int other)
+		public readonly int CompareTo(uint other)
 		{
 			if (m_id < other)
 				return -1;
@@ -69,20 +70,34 @@ namespace Lidgren.Core
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool Equals(uint other)
+		{
+			if (m_id == 0)
+				return false; // Invalid ids does not equal anything
+			return m_id == other;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override bool Equals(object? other)
 		{
+			if (m_id == 0)
+				return false; // Invalid ids does not equal anything
 			return ((other is null) == false) && m_id == ((Id32)other).m_id;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool Equals(Id32 other)
 		{
+			if (m_id == 0)
+				return false; // Invalid ids does not equal anything
 			return m_id == other.m_id;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool operator ==(Id32 x, Id32 y)
 		{
+			if (x.m_id == 0)
+				return false; // Invalid ids does not equal anything
 			return x.m_id == y.m_id;
 		}
 
@@ -119,7 +134,7 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override int GetHashCode()
 		{
-			return m_id;
+			return (int)m_id;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -131,6 +146,8 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool Equals(int other)
 		{
+			if (m_id == 0)
+				return false; // Invalid ids does not equal anything
 			return m_id == other;
 		}
 	}
@@ -139,11 +156,11 @@ namespace Lidgren.Core
 	{
 		public static readonly Id32JsonConverter Instance = new Id32JsonConverter();
 
-		public override Id32 Read(ref Utf8JsonReader rdr, Type typeToConvert, JsonSerializerOptions options) => (Id32)rdr.GetInt32();
+		public override Id32 Read(ref Utf8JsonReader rdr, Type typeToConvert, JsonSerializerOptions options) => (Id32)rdr.GetUInt32();
 
 		public override void Write(Utf8JsonWriter wrt, Id32 value, JsonSerializerOptions options)
 		{
-			wrt.WriteNumberValue((int)value);
+			wrt.WriteNumberValue((uint)value);
 		}
 	}
 }

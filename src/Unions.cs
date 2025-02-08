@@ -21,21 +21,13 @@ namespace Lidgren.Core
 
 		public BoolUIntUnion(bool value)
 		{
-#if NET5_0_OR_GREATER
 			Unsafe.SkipInit(out this);
-#else
-			UIntValue = 0;
-#endif
 			BoolValue = value;
 		}
 
 		public BoolUIntUnion(uint value)
 		{
-#if NET5_0_OR_GREATER
 			Unsafe.SkipInit(out this);
-#else
-			BoolValue = false;
-#endif
 			UIntValue = value & 1u; // don't trust the top bits
 		}
 
@@ -70,21 +62,13 @@ namespace Lidgren.Core
 
 		private SingleUIntUnion(float value)
 		{
-#if NET5_0_OR_GREATER
 			Unsafe.SkipInit(out this);
-#else
-			UIntValue = 0;
-#endif
 			SingleValue = value;
 		}
 
 		private SingleUIntUnion(uint value)
 		{
-#if NET5_0_OR_GREATER
 			Unsafe.SkipInit(out this);
-#else
-			SingleValue = 0;
-#endif
 			UIntValue = value;
 		}
 
@@ -156,21 +140,13 @@ namespace Lidgren.Core
 
 		public DoubleULongUnion(double value)
 		{
-#if NET5_0_OR_GREATER
 			Unsafe.SkipInit(out this);
-#else
-			UlongValue = 0;
-#endif
 			DoubleValue = value;
 		}
 
 		public DoubleULongUnion(ulong value)
 		{
-#if NET5_0_OR_GREATER
 			Unsafe.SkipInit(out this);
-#else
-			DoubleValue = 0;
-#endif
 			UlongValue = value;
 		}
 
@@ -202,23 +178,14 @@ namespace Lidgren.Core
 
 		public TwoSinglesULongUnion(float a, float b)
 		{
-#if NET5_0_OR_GREATER
 			Unsafe.SkipInit(out this);
-#else
-			UlongValue = 0;
-#endif
 			F0 = a;
 			F1 = b;
 		}
 
 		public TwoSinglesULongUnion(ulong value)
 		{
-#if NET5_0_OR_GREATER
 			Unsafe.SkipInit(out this);
-#else
-			F0 = 0;
-			F1 = 0;
-#endif
 			UlongValue = value;
 		}
 

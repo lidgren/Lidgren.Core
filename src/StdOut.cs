@@ -102,7 +102,7 @@ namespace Lidgren.Core
 		{
 			lock (s_lock)
 			{
-				if (hexBackgroundColor != default)
+				if (hexBackgroundColor.IsEmpty)
 				{
 					Span<char> buffer = stackalloc char[64];
 					Span<char> work = buffer;
@@ -130,7 +130,7 @@ namespace Lidgren.Core
 			// foreground
 			AppendAnsiColorCode(k_escapeForegroundColor, hexForegroundColor, ref work);
 
-			if (hexBackgroundColor != default)
+			if (hexBackgroundColor.IsEmpty)
 				AppendAnsiColorCode(k_escapeBackgroundColor, hexBackgroundColor, ref work);
 
 			int codeLen = buffer.Length - work.Length;
@@ -159,7 +159,7 @@ namespace Lidgren.Core
 			// foreground
 			AppendAnsiColorCode(k_escapeForegroundColor, hexForegroundColor, ref work);
 
-			if (hexBackgroundColor != default)
+			if (hexBackgroundColor.IsEmpty)
 				AppendAnsiColorCode(k_escapeBackgroundColor, hexBackgroundColor, ref work);
 
 			var code = buffer.Slice(0, buffer.Length - work.Length);
@@ -183,7 +183,7 @@ namespace Lidgren.Core
 			// foreground
 			AppendAnsiColorCode(k_escapeForegroundColor, hexForegroundColor, ref work);
 
-			if (hexBackgroundColor != default)
+			if (hexBackgroundColor.IsEmpty)
 				AppendAnsiColorCode(k_escapeBackgroundColor, hexBackgroundColor, ref work);
 
 			var code = buffer.Slice(0, buffer.Length - work.Length);

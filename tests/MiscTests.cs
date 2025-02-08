@@ -65,6 +65,36 @@ namespace UnitTests
 		}
 
 		[TestMethod]
+		public void TestModulo()
+		{
+			Assert.AreEqual(MathUtils.Modulo(4.0f, 5.0f), 4.0f);
+			Assert.AreEqual(MathUtils.Modulo(5.0f, 5.0f), 0.0f);
+			Assert.AreEqual(MathUtils.Modulo(6.0f, 5.0f), 1.0f);
+			Assert.AreEqual(MathUtils.Modulo(12.0f, 5.0f), 2.0f);
+			Assert.AreEqual(MathUtils.Modulo(-1.0f, 5.0f), 4.0f);
+			Assert.AreEqual(MathUtils.Modulo(-10.0f, 5.0f), 0.0f);
+			Assert.AreEqual(MathUtils.Modulo(-11.0f, 5.0f), 4.0f);
+
+			Assert.AreEqual(MathUtils.Modulo(0.0f, -5.0f), 0.0f);
+			Assert.AreEqual(MathUtils.Modulo(-1.0f, -5.0f), -1.0f);
+			Assert.AreEqual(MathUtils.Modulo(-6.0f, -5.0f), -1.0f);
+			Assert.AreEqual(MathUtils.Modulo(2.0f, -5.0f), -3.0f);
+
+			Assert.AreEqual(MathUtils.Modulo(4, 5), 4);
+			Assert.AreEqual(MathUtils.Modulo(5, 5), 0);
+			Assert.AreEqual(MathUtils.Modulo(6, 5), 1);
+			Assert.AreEqual(MathUtils.Modulo(12, 5), 2);
+			Assert.AreEqual(MathUtils.Modulo(-1, 5), 4);
+			Assert.AreEqual(MathUtils.Modulo(-10, 5), 0);
+			Assert.AreEqual(MathUtils.Modulo(-11, 5), 4);
+
+			Assert.AreEqual(MathUtils.Modulo(0, -5), 0);
+			Assert.AreEqual(MathUtils.Modulo(-1, -5), -1);
+			Assert.AreEqual(MathUtils.Modulo(-6, -5), -1);
+			Assert.AreEqual(MathUtils.Modulo(2, -5), -3);
+		}
+
+		[TestMethod]
 		public void TestBlockSwap()
 		{
 			var span = "1234BBB".ToCharArray().AsSpan();

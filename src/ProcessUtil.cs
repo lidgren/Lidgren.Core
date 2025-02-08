@@ -166,9 +166,7 @@ namespace Lidgren.Core
 			};
 
 			process.StartInfo.RedirectStandardInput = true;
-#if NET5_0_OR_GREATER
 			process.StartInfo.StandardInputEncoding = Encoding.Latin1;
-#endif
 
 			bool ok = process.Start();
 			if (!ok)

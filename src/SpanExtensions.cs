@@ -211,12 +211,8 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void WriteSingle(ref this Span<byte> span, float value)
 		{
-#if NET5_0_OR_GREATER
 			BinaryPrimitives.WriteSingleLittleEndian(span, value);
 			span = span.Slice(4);
-#else
-			WriteUInt32(ref span, SingleUIntUnion.ReinterpretCast(value));
-#endif
 		}
 
 		/// <summary>
@@ -225,13 +221,9 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static float ReadSingle(ref this ReadOnlySpan<byte> span)
 		{
-#if NET5_0_OR_GREATER
 			var retval = BinaryPrimitives.ReadSingleLittleEndian(span);
 			span = span.Slice(4);
 			return retval;
-#else
-			return SingleUIntUnion.ReinterpretCast(ReadUInt32(ref span));
-#endif
 		}
 
 		/// <summary>
@@ -240,12 +232,8 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void WriteDouble(ref this Span<byte> span, double value)
 		{
-#if NET5_0_OR_GREATER
 			BinaryPrimitives.WriteDoubleLittleEndian(span, value);
 			span = span.Slice(8);
-#else
-			WriteUInt64(ref span, DoubleULongUnion.ReinterpretCast(value));
-#endif
 		}
 
 		/// <summary>
@@ -254,13 +242,9 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static double ReadDouble(ref this ReadOnlySpan<byte> span)
 		{
-#if NET5_0_OR_GREATER
 			var retval = BinaryPrimitives.ReadDoubleLittleEndian(span);
 			span = span.Slice(8);
 			return retval;
-#else
-			return DoubleULongUnion.ReinterpretCast(ReadUInt64(ref span));
-#endif
 		}
 
 		/// <summary>
@@ -389,18 +373,11 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Vector2 ReadVector2(ref this ReadOnlySpan<byte> data)
 		{
-#if NET5_0_OR_GREATER
 			Vector2 retval;
 			retval.X = BinaryPrimitives.ReadSingleLittleEndian(data);
 			retval.Y = BinaryPrimitives.ReadSingleLittleEndian(data.Slice(4));
 			data = data.Slice(8);
 			return retval;
-#else
-			Vector2 retval;
-			retval.X = data.ReadSingle();
-			retval.Y = data.ReadSingle();
-			return retval;
-#endif
 		}
 
 		/// <summary>
@@ -409,20 +386,12 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Vector3 ReadVector3(ref this ReadOnlySpan<byte> data)
 		{
-#if NET5_0_OR_GREATER
 			Vector3 retval;
 			retval.X = BinaryPrimitives.ReadSingleLittleEndian(data);
 			retval.Y = BinaryPrimitives.ReadSingleLittleEndian(data.Slice(4));
 			retval.Z = BinaryPrimitives.ReadSingleLittleEndian(data.Slice(8));
 			data = data.Slice(12);
 			return retval;
-#else
-			Vector3 retval;
-			retval.X = data.ReadSingle();
-			retval.Y = data.ReadSingle();
-			retval.Z = data.ReadSingle();
-			return retval;
-#endif
 		}
 
 		/// <summary>
@@ -431,7 +400,6 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Vector4 ReadVector4(ref this ReadOnlySpan<byte> data)
 		{
-#if NET5_0_OR_GREATER
 			Vector4 retval;
 			retval.X = BinaryPrimitives.ReadSingleLittleEndian(data);
 			retval.Y = BinaryPrimitives.ReadSingleLittleEndian(data.Slice(4));
@@ -439,14 +407,6 @@ namespace Lidgren.Core
 			retval.W = BinaryPrimitives.ReadSingleLittleEndian(data.Slice(12));
 			data = data.Slice(16);
 			return retval;
-#else
-			Vector4 retval;
-			retval.X = data.ReadSingle();
-			retval.Y = data.ReadSingle();
-			retval.Z = data.ReadSingle();
-			retval.W = data.ReadSingle();
-			return retval;
-#endif
 		}
 	}
 }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 namespace UnitTests
 {
+
 	[TestClass]
 	public class FastDictionaryTests
 	{
