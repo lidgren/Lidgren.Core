@@ -13,7 +13,7 @@ namespace UnitTests
 		{
 			{
 				// just enqueue a bunch
-				var pq = new PriorityQueue<uint, uint>(100);
+				var pq = new Lidgren.Core.PriorityQueue<uint, uint>(100);
 				for (int i = 0; i < 1000; i++)
 				{
 					var r = PRNG.NextUInt32();
@@ -39,7 +39,7 @@ namespace UnitTests
 			}
 
 			{
-				var queue = new PriorityQueue<int, string>(4);
+				var queue = new Lidgren.Core.PriorityQueue<int, string>(4);
 
 				queue.Enqueue(5, "five");
 				queue.Enqueue(3, "three");

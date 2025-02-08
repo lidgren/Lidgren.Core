@@ -48,7 +48,7 @@ namespace UnitTests
 			var tok = new Tokenizer<char>(str);
 			for (int i = 0; i < facit.Length; i++)
 				Assert.IsTrue(tok.Next(' ').SequenceEqual(facit[i]));
-			Assert.IsTrue(tok.Next(' ') == default);
+			Assert.IsTrue(tok.Next(' ').IsEmpty);
 
 			Span<Range> tokens = stackalloc Range[32];
 			int numTokens = Tokenizer<char>.Split(str, ' ', tokens);
