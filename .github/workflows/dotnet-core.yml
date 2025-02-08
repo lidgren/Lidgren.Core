@@ -1,4 +1,4 @@
-name: .NET9
+name: .NET9 action
 
 on:
   push:
