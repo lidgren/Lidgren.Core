@@ -1,4 +1,4 @@
-name: .NET Core
+name: .NET9 action
 
 on:
   push:
@@ -13,8 +13,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
+    - name: Setup .NET9
+      uses: actions/setup-dotnet@v4.3.0
+      with:
+        dotnet-version: 9.0.x
     - name: Install dependencies
       run: dotnet restore
     - name: Build
@@ -26,4 +28,4 @@ jobs:
       with:
           PROJECT_FILE_PATH: src/Lidgren.Core.csproj
           NUGET_KEY: ${{secrets.NUGET_KEY}}
-          VERSION_STATIC: 1.2.4
+          VERSION_STATIC: 1.2.5
