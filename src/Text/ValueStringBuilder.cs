@@ -43,6 +43,8 @@ namespace Lidgren.Core
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void EnsureCapacity(int add)
 		{
+			if (m_buffer == null)
+				m_buffer = new char[Math.Max(add, 8)];
 			if (add > m_buffer.Length - m_length)
 				Grow(add);
 		}

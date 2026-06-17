@@ -298,10 +298,11 @@ namespace Lidgren.Core
 		public static int ReadString(ref this ReadOnlySpan<byte> data, Span<char> into)
 		{
 			int byteLen = (int)data[0] | ((int)data[1] << 8);
-			var numChars = System.Text.Encoding.UTF8.GetCharCount(data.Slice(2, byteLen));
+			var slice = data.Slice(2, byteLen);
+			var numChars = System.Text.Encoding.UTF8.GetCharCount(slice);
 			if (into.Length < numChars)
 				return -1;
-			System.Text.Encoding.UTF8.GetChars(data.Slice(2), into);
+			System.Text.Encoding.UTF8.GetChars(slice, into);
 			data = data.Slice(2 + byteLen);
 			return numChars;
 		}

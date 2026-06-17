@@ -15,9 +15,7 @@ namespace Lidgren.Core
 
 		public ChromeTraceTimingConsumer(string filename)
 		{
-			//m_invFrequencyToMicros = 1000000.0 / (double)Stopwatch.Frequency;
-			m_invFrequencyToMicros = 1000000000.0 / (double)Stopwatch.Frequency;
-
+			m_invFrequencyToMicros = 1000000.0 / (double)Stopwatch.Frequency;
 			var fs = new FileStream(filename, FileMode.Create, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete);
 			m_writer = new StreamWriter(fs);
 			m_writer.WriteLine("{ \"traceEvents\": [");

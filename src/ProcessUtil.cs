@@ -67,7 +67,8 @@ namespace Lidgren.Core
 			stdErr = "";
 			exitCode = -1;
 
-			var process = new Process();
+			using var process = new Process();
+
 			process.StartInfo.FileName = executable;
 			process.StartInfo.Arguments = arguments;
 			process.StartInfo.CreateNoWindow = true;
@@ -141,7 +142,7 @@ namespace Lidgren.Core
 			stdErr = "";
 			exitCode = -1;
 
-			var process = new Process();
+			using var process = new Process();
 			process.StartInfo.FileName = executable;
 			process.StartInfo.Arguments = arguments;
 			process.StartInfo.CreateNoWindow = true;

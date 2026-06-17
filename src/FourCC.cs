@@ -74,7 +74,9 @@ namespace Lidgren.Core
 
 		public bool Equals(ReadOnlySpan<byte> bytes)
 		{
-			var value = BinaryPrimitives.ReadUInt32BigEndian(bytes);
+			if (bytes.Length < 3)
+				return false;
+			var value = (uint)((uint)bytes[3] << 24 | (uint)bytes[2] << 16 | (uint)bytes[1] << 8 | (uint)bytes[0]);
 			return value == Value;
 		}
 

@@ -382,7 +382,7 @@ namespace Lidgren.Core
 				nrmValue = 1.0f - (nrmValue - 1.0f);
 
 			var modep = (mode - min) / (max - min);
-			if (NextDouble() < modep)
+			if (NextDouble(ref state) < modep)
 			{
 				// lower half
 				var span = mode - min;

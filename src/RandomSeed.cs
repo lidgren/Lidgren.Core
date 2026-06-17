@@ -42,7 +42,7 @@ namespace Lidgren.Core
 				v1 ^= (((ulong)Environment.TickCount << 30) ^ (ulong)Stopwatch.GetTimestamp());
 
 				// ensure rapid invocations differ
-				v2 ^= ((ulong)Interlocked.Add(ref s_seedIncrement, s_seedIncrement) * 7199369ul);
+				v2 ^= (ulong)Interlocked.Add(ref s_seedIncrement, 7199369);
 
 				// add processid in case multiple process is running concurrently
 				v1 ^= (ulong)Environment.ProcessId << 16;

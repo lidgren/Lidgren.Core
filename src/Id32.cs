@@ -82,7 +82,7 @@ namespace Lidgren.Core
 		{
 			if (m_id == 0)
 				return false; // Invalid ids does not equal anything
-			return ((other is null) == false) && m_id == ((Id32)other).m_id;
+			return other != null && other is Id32 && this.Equals((Id32)other);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

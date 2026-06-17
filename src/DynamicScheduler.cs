@@ -32,7 +32,7 @@ namespace Lidgren.Core
 	public class DynamicScheduler<TItem, TArg> where TItem : IScheduleItem<TItem, TArg> where TArg : class
 	{
 		[DebuggerDisplay("{Item.Name} {NodsReceived}/{NodsRequired} nods")]
-		private class ItemInfo : IDynamicOrdered
+		private sealed class ItemInfo : IDynamicOrdered
 		{
 			public int Index;
 

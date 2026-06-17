@@ -93,7 +93,7 @@ namespace Lidgren.Core
 		private const string k_escapeReset = "\u001b[m";
 		private const string k_escapeForegroundColor = "\u001b[38;2;";
 		private const string k_escapeBackgroundColor = "\u001b[48;2;";
-		private const string k_escapeClearScreen = "\u001b[2Jm\u001b[H";
+		private const string k_escapeClearScreen = "\u001b[2J\u001b[H";
 		private const string k_bold = "\u001b[1m";
 		private const string k_underline = "\u001b[4m";
 		private const string k_reversed = "\u001b[7m";
@@ -102,7 +102,7 @@ namespace Lidgren.Core
 		{
 			lock (s_lock)
 			{
-				if (hexBackgroundColor.IsEmpty)
+				if (hexBackgroundColor.IsEmpty == false)
 				{
 					Span<char> buffer = stackalloc char[64];
 					Span<char> work = buffer;

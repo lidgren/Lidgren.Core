@@ -517,8 +517,11 @@ namespace Lidgren.Core
 
 		public static Color Read(ref Utf8JsonReader rdr)
 		{
-			Span<char> arr = stackalloc char[rdr.ValueSpan.Length];
-			for (int i = 0; i < rdr.ValueSpan.Length; i++)
+			var len = rdr.ValueSpan.Length;
+			if (len > 8)
+				return Color.Black;
+			Span<char> arr = stackalloc char[len];
+			for (int i = 0; i < len; i++)
 				arr[i] = (char)rdr.ValueSpan[i];
 			return Color.FromHex(arr);
 		}

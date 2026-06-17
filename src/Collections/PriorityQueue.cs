@@ -67,7 +67,7 @@ namespace Lidgren.Core
 			var cnt = m_count;
 			if (cnt >= entries.Length)
 			{
-				Array.Resize(ref m_entries, cnt * 2);
+				Array.Resize(ref m_entries, Math.Max(4, cnt * 2));
 				entries = m_entries;
 			}
 

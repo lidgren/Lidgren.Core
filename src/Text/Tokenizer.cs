@@ -239,6 +239,8 @@ namespace Lidgren.Core
 		/// </summary>
 		public static int Split(ReadOnlySpan<T> data, T delimiter, Span<Range> into)
 		{
+			if (data.Length < 1)
+				return 0;
 			int count = 0;
 			int start = 0;
 			int idx = 0;

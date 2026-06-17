@@ -40,7 +40,7 @@ namespace Lidgren.Core
 		/// </summary>
 		public static ulong Utf8Hash64(ReadOnlySpan<char> str)
 		{
-			Span<byte> bytes = stackalloc byte[str.Length * 2];
+			Span<byte> bytes = stackalloc byte[str.Length * 3];
 			int cnt = System.Text.Encoding.UTF8.GetBytes(str, bytes);
 			return Hash64(bytes.Slice(0, cnt));
 		}
@@ -50,7 +50,7 @@ namespace Lidgren.Core
 		/// </summary>
 		public static uint Utf8Hash32(ReadOnlySpan<char> str)
 		{
-			Span<byte> bytes = stackalloc byte[str.Length * 2];
+			Span<byte> bytes = stackalloc byte[str.Length * 3];
 			int cnt = System.Text.Encoding.UTF8.GetBytes(str, bytes);
 			return Hash32(bytes.Slice(0, cnt));
 		}

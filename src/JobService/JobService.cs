@@ -68,20 +68,24 @@ namespace Lidgren.Core
 			}
 
 			// do job
-			using (new Timing(job.Name))
+			try
 			{
+				using (new Timing(job.Name))
+				{
 #if DEBUG
-				if (worker != null)
-					worker.CurrentJob = job;
+					if (worker != null)
+						worker.CurrentJob = job;
 #endif
-				// go go go
-				job.Work(job.Argument);
+					// go go go
+					job.Work(job.Argument);
+				}
 			}
-
-			var cmp = job.Completion;
-			if (cmp != null)
-				cmp.IncrementCompleted();
-
+			finally
+			{
+				var cmp = job.Completion;
+				if (cmp != null)
+					cmp.IncrementCompleted();
+			}
 			return true;
 		}
 

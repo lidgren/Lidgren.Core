@@ -10,7 +10,7 @@ namespace Lidgren.Core
 		Shutdown
 	}
 
-	internal class JobWorker
+	internal sealed class JobWorker
 	{
 		private Thread m_thread;
 		private JobWorkerState m_state;

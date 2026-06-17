@@ -98,7 +98,7 @@ namespace Lidgren.Core
 			CoreException.Assert(index >= 0 && index < m_count);
 
 			int offset = m_offset;
-			int countAfterRemove = m_count--;
+			int countAfterRemove = --m_count;
 
 			if (index == 0)
 			{
