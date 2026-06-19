@@ -98,14 +98,14 @@ namespace Lidgren.Core
 			return Array.IndexOf(m_buffer, item, m_offset, m_count) != -1;
 			//return ReadOnlySpan.Contains(item);
 		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public int IndexOf(in T item)
 		{
-			//if (item is IEquatable<T>)
-			//	return ReadOnlySpan.IndexOf(item);
-			//else
-			return Array.IndexOf(m_buffer, item, m_offset, m_count) - m_offset;
+			int raw = Array.IndexOf(m_buffer, item, m_offset, m_count);
+			return raw < 0 ? -1 : raw - m_offset;
 		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public int LastIndexOf(in T item)
 		{
@@ -115,6 +115,7 @@ namespace Lidgren.Core
 			return Array.LastIndexOf(m_buffer, item, m_offset + m_count - 1, m_count) - m_offset;
 			//return ReadOnlySpan.LastIndexOf(item);
 		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool IsEmpty() { return m_count == 0; }
 

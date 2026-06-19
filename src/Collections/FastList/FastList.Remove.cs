@@ -42,7 +42,6 @@ namespace Lidgren.Core
 		/// <summary>
 		/// Removes first instance of item in list; returns true if found and removed; does NOT maintain order of list after removal
 		/// </summary>
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool RemoveUnordered(in T item)
 		{
 			var idx = IndexOf(item);
@@ -55,7 +54,6 @@ namespace Lidgren.Core
 		/// <summary>
 		/// Removes item at index; maintaining list order
 		/// </summary>
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void RemoveAt(int index)
 		{
 			CoreException.Assert(index >= 0 && index < m_count);
@@ -92,7 +90,6 @@ namespace Lidgren.Core
 		/// <summary>
 		/// Removes item at index; not maintaining list order
 		/// </summary>
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void RemoveAtUnordered(int index)
 		{
 			CoreException.Assert(index >= 0 && index < m_count);
@@ -116,7 +113,6 @@ namespace Lidgren.Core
 				m_buffer[offset + countAfterRemove] = default;
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void RemoveRange(int index, int count)
 		{
 			int localSpanCount = m_count;
@@ -171,7 +167,6 @@ namespace Lidgren.Core
 		/// <summary>
 		/// Returns all items matching predicate; returns number of items removed
 		/// </summary>
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public int RemoveAll(Predicate<T> match)
 		{
 			int offset = m_offset;
@@ -192,7 +187,10 @@ namespace Lidgren.Core
 				if (i < count)
 					m_buffer[offset + idx++] = m_buffer[offset + i++];
 			}
-			Array.Clear(m_buffer, offset + idx, count - idx);
+			if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+			{
+				Array.Clear(m_buffer, offset + idx, count - idx);
+			}
 			int result = count - idx;
 			m_count = idx;
 			return result;

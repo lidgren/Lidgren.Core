@@ -97,7 +97,7 @@ namespace Lidgren.Core
 		{
 			var buffer = m_buffer;
 			int cnt = m_count;
-			if (cnt + numItems >= buffer.Length)
+			if (cnt + numItems > buffer.Length)
 				buffer = Grow(numItems);
 			if (m_offset + cnt + numItems > buffer.Length)
 				Compact();
