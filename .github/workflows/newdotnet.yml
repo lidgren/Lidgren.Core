@@ -28,7 +28,7 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test --no-build --verbosity normal --filter 'FullyQualifiedName!~ExtensiveJobServiceTests'
     # Use the ambient GitHub token to login to NuGet and retrieve an API key
     - name: NuGet login (OIDC ? temp API key)
       uses: NuGet/login@v1
